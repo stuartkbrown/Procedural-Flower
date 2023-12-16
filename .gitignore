@@ -25,3 +25,4 @@ dist-ssr
 
 # Excluding specific temp files
 main_copy.js
+main_points.js

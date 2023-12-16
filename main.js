@@ -31,7 +31,7 @@ function calculateVertex(theta, phi) {
 
 // Create vertices
 for (let theta = 0; theta < numThetaSteps; theta += 1) {
-  for (let phi = 0; phi < numPhiSteps; phi += 2) {
+  for (let phi = 0; phi < numPhiSteps; phi += 1) {
     const vertex = calculateVertex(theta, phi);
     positions.push(vertex.x, vertex.y, vertex.z);
 
