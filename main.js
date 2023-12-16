@@ -18,13 +18,19 @@ const numPhiSteps = 360;
 
 // Function to calculate vertex position based on parameters
 function calculateVertex(theta, phi) {
+  const normalizedPhi = (phi / numPhiSteps) * 2 * Math.PI;
   const r =
-    ((70 * Math.pow(Math.abs(Math.sin(phi * 3)), 1) + 225) * theta) / 60;
-  const x = r * Math.cos(phi);
-  const y = r * Math.sin(phi);
+    (((70 * Math.pow(Math.abs(Math.sin(normalizedPhi * 3)), 1) + 225) * theta) /
+      numThetaSteps /
+      60) *
+    60;
+  const x = r * Math.cos(normalizedPhi);
+  const y = r * Math.sin(normalizedPhi);
 
   const z =
-    vShape(350, r / 100, 0.8, 0.15) - 200 + perturbation(1.5, r / 100, 12, phi);
+    vShape(350, r / 100, 0.8, 0.15) -
+    200 +
+    perturbation(1.5, r / 100, 12, normalizedPhi);
 
   return new THREE.Vector3(x, y, z);
 }
