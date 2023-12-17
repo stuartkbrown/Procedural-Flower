@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import "/style.css";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 // Scene
@@ -13,14 +12,30 @@ const positions = [];
 const colors = [];
 
 // Parameters
-const numThetaSteps = 60;
-const numPhiSteps = 360;
+let numThetaSteps = 60;
+let numPhiSteps = 360;
+
+let petalNumber;
+let petalLength;
+let diameter;
+let petalSharpness;
+let height;
+let curvature1;
+let curvature2;
+let bumpiness;
+let bumpNumber;
 
 // Function to calculate vertex position based on parameters
 function calculateVertex(theta, phi) {
   const normalizedPhi = (phi / numPhiSteps) * 2 * Math.PI;
   const r =
-    (((70 * Math.pow(Math.abs(Math.sin(normalizedPhi * 3)), 1) + 225) * theta) /
+    (((petalLength *
+      Math.pow(
+        Math.abs(Math.sin((normalizedPhi * petalNumber) / 2)),
+        petalSharpness
+      ) +
+      diameter) *
+      theta) /
       numThetaSteps /
       60) *
     60;
@@ -28,39 +43,74 @@ function calculateVertex(theta, phi) {
   const y = r * Math.sin(normalizedPhi);
 
   const z =
-    vShape(350, r / 100, 0.8, 0.15) -
+    vShape(height, r / 100, curvature1, curvature2) -
     200 +
-    perturbation(1.5, r / 100, 12, normalizedPhi);
+    perturbation(bumpiness, r / 100, bumpNumber, normalizedPhi);
 
   return new THREE.Vector3(x, y, z);
 }
 
 // Create vertices
-for (let theta = 0; theta < numThetaSteps; theta += 1) {
-  for (let phi = 0; phi < numPhiSteps; phi += 1) {
-    const vertex = calculateVertex(theta, phi);
-    positions.push(vertex.x, vertex.y, vertex.z);
+function createVertices() {
+  positions.length = 0;
+  colors.length = 0;
 
-    // Color based on z-coordinate
-    const color = new THREE.Color(0xffffff);
-    color.setRGB((vertex.z + 200) / 400, 0, 1 - (vertex.z + 200) / 400);
-    colors.push(color.r, color.g, color.b);
+  for (let theta = 0; theta < numThetaSteps; theta += 1) {
+    for (let phi = 0; phi < numPhiSteps; phi += 1) {
+      const vertex = calculateVertex(theta, phi);
+      positions.push(vertex.x, vertex.y, vertex.z);
+
+      // Color based on z-coordinate
+      const color = new THREE.Color(0xffffff);
+      color.setRGB((vertex.z + 200) / 400, 0, 1 - (vertex.z + 200) / 400);
+      colors.push(color.r, color.g, color.b);
+    }
   }
+
+  // Update BufferGeometry attributes
+  geometry.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(positions, 3)
+  );
+  geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
 }
 
-// Set attributes to BufferGeometry
-geometry.setAttribute(
-  "position",
-  new THREE.Float32BufferAttribute(positions, 3)
-);
-geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+// Set up sliders
+const petalNumberSlider = document.getElementById("petalNumberSlider");
+const petalLengthSlider = document.getElementById("petalLengthSlider");
+const diameterSlider = document.getElementById("diameterSlider");
+const petalSharpnessSlider = document.getElementById("petalSharpnessSlider");
+const heightSlider = document.getElementById("heightSlider");
+const curvature1Slider = document.getElementById("curvature1Slider");
+const curvature2Slider = document.getElementById("curvature2Slider");
+const bumpinessSlider = document.getElementById("bumpinessSlider");
+const bumpNumberSlider = document.getElementById("bumpNumberSlider");
 
-// Create material
-const material = new THREE.PointsMaterial({ size: 0.1, vertexColors: true });
+// Function to update parameters based on slider values
+function updateParameters() {
+  petalNumber = parseFloat(petalNumberSlider.value);
+  petalLength = parseFloat(petalLengthSlider.value);
+  diameter = parseFloat(diameterSlider.value);
+  petalSharpness = parseFloat(petalSharpnessSlider.value);
+  height = parseFloat(heightSlider.value);
+  curvature1 = parseFloat(curvature1Slider.value);
+  curvature2 = parseFloat(curvature2Slider.value);
+  bumpiness = parseFloat(bumpinessSlider.value);
+  bumpNumber = parseFloat(bumpNumberSlider.value);
 
-// Create mesh with BufferGeometry and material
-const points = new THREE.Points(geometry, material);
-scene.add(points);
+  createVertices(); // Recreate vertices based on updated parameters
+}
+
+// Add event listeners for slider changes
+petalNumberSlider.addEventListener("input", updateParameters);
+petalLengthSlider.addEventListener("input", updateParameters);
+diameterSlider.addEventListener("input", updateParameters);
+petalSharpnessSlider.addEventListener("input", updateParameters);
+heightSlider.addEventListener("input", updateParameters);
+curvature1Slider.addEventListener("input", updateParameters);
+curvature2Slider.addEventListener("input", updateParameters);
+bumpinessSlider.addEventListener("input", updateParameters);
+bumpNumberSlider.addEventListener("input", updateParameters);
 
 // Sizes
 const sizes = {
@@ -104,8 +154,6 @@ const animate = () => {
   requestAnimationFrame(animate);
 };
 
-animate();
-
 // Functions from p5.js code
 function vShape(A, r, a, b) {
   return (
@@ -118,3 +166,17 @@ function vShape(A, r, a, b) {
 function perturbation(A, r, p, angle) {
   return 1 + A * Math.pow(r, 2) * Math.sin(p * angle);
 }
+
+// Initial creation of vertices
+updateParameters();
+createVertices();
+
+// Create material
+const material = new THREE.PointsMaterial({ size: 0.1, vertexColors: true });
+
+// Create mesh with BufferGeometry and material
+const points = new THREE.Points(geometry, material);
+scene.add(points);
+
+// Start the animation loop
+animate();

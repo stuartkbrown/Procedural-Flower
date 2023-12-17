@@ -47,3 +47,22 @@ nav ul {
   top: 75%;
   transform: translate(-50%, -75%);
 }
+
+.controls {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.controls label {
+  margin-bottom: 5px;
+}
+
+.controls input {
+  width: 100px; /* Adjust the width as needed */
+  margin-bottom: 10px;
+}
