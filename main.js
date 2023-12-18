@@ -12,8 +12,8 @@ const positions = [];
 const colors = [];
 
 // Parameters
-let numThetaSteps = 60;
-let numPhiSteps = 360;
+let numThetaSteps; // vertical resolution
+let numPhiSteps; // radial resolution
 
 let petalNumber;
 let petalLength;
@@ -76,6 +76,13 @@ function createVertices() {
 }
 
 // Set up sliders
+const verticalResolutionSlider = document.getElementById(
+  "verticalResolutionSlider"
+);
+const radialResolutionSlider = document.getElementById(
+  "radialResolutionSlider"
+);
+
 const petalNumberSlider = document.getElementById("petalNumberSlider");
 const petalLengthSlider = document.getElementById("petalLengthSlider");
 const diameterSlider = document.getElementById("diameterSlider");
@@ -88,6 +95,9 @@ const bumpNumberSlider = document.getElementById("bumpNumberSlider");
 
 // Function to update parameters based on slider values
 function updateParameters() {
+  numThetaSteps = parseFloat(verticalResolutionSlider.value);
+  numPhiSteps = parseFloat(radialResolutionSlider.value);
+
   petalNumber = parseFloat(petalNumberSlider.value);
   petalLength = parseFloat(petalLengthSlider.value);
   diameter = parseFloat(diameterSlider.value);
@@ -102,6 +112,9 @@ function updateParameters() {
 }
 
 // Add event listeners for slider changes
+verticalResolutionSlider.addEventListener("input", updateParameters);
+radialResolutionSlider.addEventListener("input", updateParameters);
+
 petalNumberSlider.addEventListener("input", updateParameters);
 petalLengthSlider.addEventListener("input", updateParameters);
 diameterSlider.addEventListener("input", updateParameters);
