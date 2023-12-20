@@ -50,19 +50,23 @@ nav ul {
 
 .controls {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 10rem; /* Adjust the top position */
+  left: 4rem;
   z-index: 2;
   color: white;
+}
+
+.control-group {
   display: flex;
-  flex-direction: column;
-}
-
-.controls label {
-  margin-bottom: 5px;
-}
-
-.controls input {
-  width: 100px; /* Adjust the width as needed */
+  align-items: center;
   margin-bottom: 10px;
+}
+
+.control-group label {
+  margin-right: 10px;
+}
+
+.control-group input {
+  margin-right: 10px;
+  width: 100px; /* Adjust the width as needed */
 }
