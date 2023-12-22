@@ -50,7 +50,7 @@ nav ul {
 
 .controls {
   position: absolute;
-  top: 10rem; /* Adjust the top position */
+  top: 8rem; /* Adjust the top position */
   left: 4rem;
   z-index: 2;
   color: white;
@@ -69,4 +69,19 @@ nav ul {
 .control-group input {
   margin-right: 10px;
   width: 100px; /* Adjust the width as needed */
+}
+
+button#resetCameraButton {
+  background-color: #0062ff;
+  color: white;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+button#resetCameraButton:hover {
+  background-color: rgb(0, 45, 75);
 }

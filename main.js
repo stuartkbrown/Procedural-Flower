@@ -100,11 +100,12 @@ const curvature2Slider = document.getElementById("curvature2Slider");
 const bumpinessSlider = document.getElementById("bumpinessSlider");
 const bumpNumberSlider = document.getElementById("bumpNumberSlider");
 
-// Set up color picker
+// Set up colour pickers
 const flowerColorPicker = document.getElementById("flowerColourPicker");
-flowerColorPicker.addEventListener("input", createVertices);
 const flowerColorPicker2 = document.getElementById("flowerColourPicker2");
-flowerColorPicker2.addEventListener("input", createVertices);
+
+// Set up buttons
+const resetCameraButton = document.getElementById("resetCameraButton");
 
 // Function to update parameters based on slider values
 function updateParameters() {
@@ -138,6 +139,13 @@ curvature2Slider.addEventListener("input", updateParameters);
 bumpinessSlider.addEventListener("input", updateParameters);
 bumpNumberSlider.addEventListener("input", updateParameters);
 
+// Add event listener for colour pickers
+flowerColorPicker.addEventListener("input", createVertices);
+flowerColorPicker2.addEventListener("input", createVertices);
+
+// Add event listener for the buttons
+resetCameraButton.addEventListener("click", resetCamera);
+
 // Sizes
 const sizes = {
   width: window.innerWidth,
@@ -149,9 +157,16 @@ const camera = new THREE.PerspectiveCamera(
   75,
   sizes.width / sizes.height,
   0.1,
-  1000
+  2000
 );
-camera.position.z = 700;
+camera.position.z = 550;
+
+// Function to reset camera position and orientation
+function resetCamera() {
+  camera.position.set(0, 0, 550); // Set the initial camera position
+  camera.lookAt(0, 0, 0); // Look at the center of the scene
+  controls.reset(); // Reset controls to their initial state
+}
 
 // Renderer
 const canvas = document.querySelector(".webgl");
