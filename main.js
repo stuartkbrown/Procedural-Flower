@@ -55,15 +55,22 @@ function createVertices() {
   positions.length = 0;
   colors.length = 0;
 
+  // Get the colors from the color pickers
+  const flowerColorPicker = document.getElementById("flowerColourPicker");
+  const color1 = new THREE.Color(flowerColorPicker.value);
+
+  const flowerColorPicker2 = document.getElementById("flowerColourPicker2");
+  const color2 = new THREE.Color(flowerColorPicker2.value);
+
   for (let theta = 0; theta < numThetaSteps; theta += 1) {
     for (let phi = 0; phi < numPhiSteps; phi += 1) {
       const vertex = calculateVertex(theta, phi);
       positions.push(vertex.x, vertex.y, vertex.z);
 
-      // Color based on z-coordinate
-      const color = new THREE.Color(0xffffff);
-      color.setRGB((vertex.z + 200) / 400, 0, 1 - (vertex.z + 200) / 400);
-      colors.push(color.r, color.g, color.b);
+      // Adjust the interpolation parameter based on the loop indices
+      const t = theta / numThetaSteps; // Normalize phi to [0, 1]
+      const lerpedColor = color1.clone().lerp(color2, t);
+      colors.push(lerpedColor.r, lerpedColor.g, lerpedColor.b);
     }
   }
 
@@ -92,6 +99,12 @@ const curvature1Slider = document.getElementById("curvature1Slider");
 const curvature2Slider = document.getElementById("curvature2Slider");
 const bumpinessSlider = document.getElementById("bumpinessSlider");
 const bumpNumberSlider = document.getElementById("bumpNumberSlider");
+
+// Set up color picker
+const flowerColorPicker = document.getElementById("flowerColourPicker");
+flowerColorPicker.addEventListener("input", createVertices);
+const flowerColorPicker2 = document.getElementById("flowerColourPicker2");
+flowerColorPicker2.addEventListener("input", createVertices);
 
 // Function to update parameters based on slider values
 function updateParameters() {
