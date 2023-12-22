@@ -106,6 +106,7 @@ const flowerColorPicker2 = document.getElementById("flowerColourPicker2");
 
 // Set up buttons
 const resetCameraButton = document.getElementById("resetCameraButton");
+const randomiseButton = document.getElementById("randomiseButton");
 
 // Function to update parameters based on slider values
 function updateParameters() {
@@ -123,6 +124,95 @@ function updateParameters() {
   bumpNumber = parseFloat(bumpNumberSlider.value);
 
   createVertices(); // Recreate vertices based on updated parameters
+}
+
+// Function to randomize parameters
+function randomiseParameters() {
+  document.getElementById("verticalResolutionSlider").value = Math.floor(
+    Math.random() * (100 - 10 + 1) + 10
+  );
+  document.getElementById("radialResolutionSlider").value = Math.floor(
+    Math.random() * (720 - 45 + 1) + 45
+  );
+  document.getElementById("petalNumberSlider").value = Math.floor(
+    Math.random() * (20 - 1 + 1) + 1
+  );
+  document.getElementById("diameterSlider").value = Math.floor(
+    Math.random() * (250 - 20 + 1) + 20
+  );
+  document.getElementById("petalLengthSlider").value = Math.floor(
+    Math.random() * (300 - 0 + 1)
+  );
+  document.getElementById("petalSharpnessSlider").value =
+    Math.random() * (10.0 - 0.0) + 0.0;
+  document.getElementById("heightSlider").value = Math.floor(
+    Math.random() * (600 - 0 + 1)
+  );
+  document.getElementById("curvature1Slider").value =
+    Math.random() * (4.0 - 0.0) + 0.0;
+  document.getElementById("curvature2Slider").value =
+    Math.random() * (1.0 - 0.0) + 0.0;
+  document.getElementById("bumpinessSlider").value =
+    Math.random() * (5.0 - 0.0) + 0.0;
+  document.getElementById("bumpNumberSlider").value = Math.floor(
+    Math.random() * (20 - 0 + 1)
+  );
+
+  // Set the values of the output elements
+  document.getElementById(
+    "verticalResolutionSlider"
+  ).nextElementSibling.textContent = document.getElementById(
+    "verticalResolutionSlider"
+  ).value;
+  document.getElementById(
+    "radialResolutionSlider"
+  ).nextElementSibling.textContent = document.getElementById(
+    "radialResolutionSlider"
+  ).value;
+  document.getElementById("petalNumberSlider").nextElementSibling.textContent =
+    document.getElementById("petalNumberSlider").value;
+  document.getElementById("diameterSlider").nextElementSibling.textContent =
+    document.getElementById("diameterSlider").value;
+  document.getElementById("petalLengthSlider").nextElementSibling.textContent =
+    document.getElementById("petalLengthSlider").value;
+  document.getElementById(
+    "petalSharpnessSlider"
+  ).nextElementSibling.textContent = document.getElementById(
+    "petalSharpnessSlider"
+  ).value;
+  document.getElementById("heightSlider").nextElementSibling.textContent =
+    document.getElementById("heightSlider").value;
+  document.getElementById("curvature1Slider").nextElementSibling.textContent =
+    document.getElementById("curvature1Slider").value;
+  document.getElementById("curvature2Slider").nextElementSibling.textContent =
+    document.getElementById("curvature2Slider").value;
+  document.getElementById("bumpinessSlider").nextElementSibling.textContent =
+    document.getElementById("bumpinessSlider").value;
+  document.getElementById("bumpNumberSlider").nextElementSibling.textContent =
+    document.getElementById("bumpNumberSlider").value;
+
+  // Trigger the input event to update the visuals
+  updateParameters();
+
+  // Randomize color values for the color pickers
+  const randomColor1 = getRandomColor();
+  const randomColor2 = getRandomColor();
+
+  document.getElementById("flowerColourPicker").value = randomColor1;
+  document.getElementById("flowerColourPicker2").value = randomColor2;
+
+  // Trigger the input event for color pickers to update the visuals
+  document
+    .getElementById("flowerColourPicker")
+    .dispatchEvent(new Event("input"));
+  document
+    .getElementById("flowerColourPicker2")
+    .dispatchEvent(new Event("input"));
+}
+
+// Function to get a random color in hex format
+function getRandomColor() {
+  return "#" + Math.floor(Math.random() * 16777215).toString(16);
 }
 
 // Add event listeners for slider changes
@@ -145,6 +235,7 @@ flowerColorPicker2.addEventListener("input", createVertices);
 
 // Add event listener for the buttons
 resetCameraButton.addEventListener("click", resetCamera);
+randomiseButton.addEventListener("click", randomiseParameters);
 
 // Sizes
 const sizes = {

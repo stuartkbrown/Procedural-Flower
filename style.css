@@ -71,7 +71,8 @@ nav ul {
   width: 100px; /* Adjust the width as needed */
 }
 
-button#resetCameraButton {
+button#resetCameraButton,
+button#randomiseButton {
   background-color: #0062ff;
   color: white;
   padding: 10px 20px;
@@ -80,8 +81,11 @@ button#resetCameraButton {
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.1s ease;
+  margin-right: 10px;
 }
 
-button#resetCameraButton:hover {
+button#resetCameraButton:hover,
+button#randomiseButton:hover {
   background-color: rgb(0, 45, 75);
+  margin-right: 10px;
 }
