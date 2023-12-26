@@ -43,17 +43,35 @@ nav ul {
   z-index: 2;
   position: absolute;
   font-size: 3rem;
-  left: 50%;
-  top: 75%;
-  transform: translate(-50%, -75%);
+  left: 2.5%;
+  top: 2.5%;
+  transform: translate(-2.5%, -2.5%);
 }
 
 .controls {
   position: absolute;
-  top: 8rem; /* Adjust the top position */
+  top: 6rem; /* Adjust the top position */
   left: 4rem;
   z-index: 2;
   color: white;
+}
+
+.controls-right {
+  position: absolute;
+  top: 6rem; /* Adjust the top position */
+  right: 4rem; /* Adjust the right position */
+  z-index: 2;
+  color: white;
+}
+
+.controls-heading {
+  background-color: white;
+  color: black;
+  font-size: 1.5rem;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  margin-bottom: 1rem;
 }
 
 .control-group {

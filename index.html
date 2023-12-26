@@ -12,15 +12,17 @@
     />
   </head>
   <body>
+    <h1 class="title">Procedural Flower</h1>
     <canvas class="webgl"></canvas>
-    <nav>
-      <a href="/">Procedural Flower</a>
-      <ul>
-        <li>Explore</li>
-        <li>Create</li>
-      </ul>
-    </nav>
     <div class="controls">
+      <div class="controls-heading">Flower Controls</div>
+      <div class="control-group">
+        <button id="resetCameraButton">Reset Camera</button>
+        <button id="randomiseButton">Randomise</button>
+      </div>
+    </div>
+    <div class="controls-right">
+      <div class="controls-heading">Flower Parameters</div>
       <div class="control-group">
         <label for="flowerColourPicker">Flower Colour 1:</label>
         <input type="color" id="flowerColourPicker" value="#ff0000" />
@@ -184,12 +186,7 @@
         />
         <output>10</output>
       </div>
-      <div class="control-group">
-        <button id="resetCameraButton">Reset Camera</button>
-        <button id="randomiseButton">Randomise</button>
-      </div>
     </div>
-    <h1 class="title">Give it a spin</h1>
     <script type="module" src="/main.js"></script>
   </body>
 </html>

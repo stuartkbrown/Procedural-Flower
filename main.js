@@ -248,7 +248,7 @@ const camera = new THREE.PerspectiveCamera(
   75,
   sizes.width / sizes.height,
   0.1,
-  2000
+  8000
 );
 camera.position.z = 550;
 
@@ -267,6 +267,7 @@ renderer.setSize(sizes.width, sizes.height);
 // Controls
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
+controls.dampingFactor = 0.08;
 
 // Resize
 window.addEventListener("resize", () => {
@@ -304,7 +305,7 @@ updateParameters();
 createVertices();
 
 // Create material
-const material = new THREE.PointsMaterial({ size: 0.1, vertexColors: true });
+const material = new THREE.PointsMaterial({ size: 1, vertexColors: true });
 
 // Create mesh with BufferGeometry and material
 const points = new THREE.Points(geometry, material);
