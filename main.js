@@ -104,6 +104,15 @@ const bumpNumberSlider = document.getElementById("bumpNumberSlider");
 const flowerColorPicker = document.getElementById("flowerColourPicker");
 const flowerColorPicker2 = document.getElementById("flowerColourPicker2");
 
+// Set up background color picker
+const backgroundColorPicker = document.getElementById("backgroundColorPicker");
+
+// Function to change the background color
+function changeBackgroundColor() {
+  const color = backgroundColorPicker.value;
+  renderer.setClearColor(new THREE.Color(color), 1);
+}
+
 // Set up buttons
 const resetCameraButton = document.getElementById("resetCameraButton");
 const randomiseButton = document.getElementById("randomiseButton");
@@ -362,6 +371,9 @@ bumpNumberSlider.addEventListener("input", updateParameters);
 // Add event listener for colour pickers
 flowerColorPicker.addEventListener("input", createVertices);
 flowerColorPicker2.addEventListener("input", createVertices);
+
+// Add event listener for the background color picker
+backgroundColorPicker.addEventListener("input", changeBackgroundColor);
 
 // Add event listener for the buttons
 resetCameraButton.addEventListener("click", resetCamera);

@@ -15,12 +15,16 @@
     <h1 class="title">Procedural Flower</h1>
     <canvas class="webgl"></canvas>
     <div class="controls">
-      <div class="controls-heading">Flower Controls</div>
+      <div class="controls-heading">Controls</div>
       <div class="control-group">
         <button id="resetCameraButton">Reset Camera</button>
         <button id="randomiseButton">Randomise</button>
       </div>
-      <div class="controls-heading">Flower Presets</div>
+      <div class="control-group">
+        <label for="backgroundColorPicker">Background Color:</label>
+        <input type="color" id="backgroundColorPicker" value="#000000" />
+      </div>
+      <div class="controls-heading">Presets</div>
       <div class="control-group">
         <button id="hibiscusButton">Hibiscus</button>
         <button id="lilyButton">Lily</button>
@@ -32,7 +36,7 @@
       </div>
     </div>
     <div class="controls-right">
-      <div class="controls-heading">Flower Parameters</div>
+      <div class="controls-heading">Parameters</div>
       <div class="control-group">
         <label for="flowerColourPicker">Flower Colour 1:</label>
         <input type="color" id="flowerColourPicker" value="#ff0000" />
