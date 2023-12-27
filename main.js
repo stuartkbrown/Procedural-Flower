@@ -107,6 +107,11 @@ const flowerColorPicker2 = document.getElementById("flowerColourPicker2");
 // Set up buttons
 const resetCameraButton = document.getElementById("resetCameraButton");
 const randomiseButton = document.getElementById("randomiseButton");
+const hibiscusButton = document.getElementById("hibiscusButton");
+const forgetMeNotButton = document.getElementById("forgetMeNotButton");
+const lilyButton = document.getElementById("lilyButton");
+const morningGloryButton = document.getElementById("morningGloryButton");
+const buttercupButton = document.getElementById("buttercupButton");
 
 // Function to update parameters based on slider values
 function updateParameters() {
@@ -215,6 +220,131 @@ function getRandomColor() {
   return "#" + Math.floor(Math.random() * 16777215).toString(16);
 }
 
+// Preset configurations
+const presets = {
+  hibiscus: {
+    verticalResolution: 60,
+    radialResolution: 360,
+    petalNumber: 5,
+    petalLength: 200,
+    diameter: 60,
+    petalSharpness: 0.4,
+    height: 300,
+    curvature1: 0.8,
+    curvature2: 0.2,
+    bumpiness: 2.5,
+    bumpNumber: 12,
+    color1: "#87CEEB",
+    color2: "#CC3168",
+  },
+  forgetMeNot: {
+    verticalResolution: 60,
+    radialResolution: 360,
+    petalNumber: 5,
+    petalLength: 110,
+    diameter: 130,
+    petalSharpness: 1,
+    height: 30,
+    curvature1: 2.7,
+    curvature2: 0.4,
+    bumpiness: 5,
+    bumpNumber: 8,
+    color1: "#6495ED",
+    color2: "#00FFFF",
+  },
+  morningGlory: {
+    verticalResolution: 60,
+    radialResolution: 360,
+    petalNumber: 6,
+    petalLength: 80,
+    diameter: 130,
+    petalSharpness: 1.4,
+    height: 500,
+    curvature1: 0.5,
+    curvature2: 0.3,
+    bumpiness: 1.5,
+    bumpNumber: 12,
+    color1: "#4169E1",
+    color2: "#87CEEB",
+  },
+  lily: {
+    verticalResolution: 60,
+    radialResolution: 360,
+    petalNumber: 5,
+    petalLength: 140,
+    diameter: 20,
+    petalSharpness: 3,
+    height: 400,
+    curvature1: 0.6,
+    curvature2: 0.2,
+    bumpiness: 1.5,
+    bumpNumber: 12,
+    color1: "#8B008B",
+    color2: "#FFFF00",
+  },
+  buttercup: {
+    verticalResolution: 60,
+    radialResolution: 360,
+    petalNumber: 5,
+    petalLength: 160,
+    diameter: 40,
+    petalSharpness: 0.8,
+    height: 20,
+    curvature1: 2.9,
+    curvature2: 0.0,
+    bumpiness: 1.5,
+    bumpNumber: 8,
+    color1: "#FFD700",
+    color2: "#FF8C00",
+  },
+};
+
+// Function to load flower from a preset
+function loadFlowerFromPreset(presetName) {
+  const preset = presets[presetName];
+  if (preset) {
+    // Set slider values
+    verticalResolutionSlider.value = preset.verticalResolution;
+    radialResolutionSlider.value = preset.radialResolution;
+    petalNumberSlider.value = preset.petalNumber;
+    petalLengthSlider.value = preset.petalLength;
+    diameterSlider.value = preset.diameter;
+    petalSharpnessSlider.value = preset.petalSharpness;
+    heightSlider.value = preset.height;
+    curvature1Slider.value = preset.curvature1;
+    curvature2Slider.value = preset.curvature2;
+    bumpinessSlider.value = preset.bumpiness;
+    bumpNumberSlider.value = preset.bumpNumber;
+
+    // Update input elements
+    verticalResolutionSlider.nextElementSibling.textContent =
+      verticalResolutionSlider.value;
+    radialResolutionSlider.nextElementSibling.textContent =
+      radialResolutionSlider.value;
+    petalNumberSlider.nextElementSibling.textContent = petalNumberSlider.value;
+    diameterSlider.nextElementSibling.textContent = diameterSlider.value;
+    petalLengthSlider.nextElementSibling.textContent = petalLengthSlider.value;
+    petalSharpnessSlider.nextElementSibling.textContent =
+      petalSharpnessSlider.value;
+    heightSlider.nextElementSibling.textContent = heightSlider.value;
+    curvature1Slider.nextElementSibling.textContent = curvature1Slider.value;
+    curvature2Slider.nextElementSibling.textContent = curvature2Slider.value;
+    bumpinessSlider.nextElementSibling.textContent = bumpinessSlider.value;
+    bumpNumberSlider.nextElementSibling.textContent = bumpNumberSlider.value;
+
+    // Set color picker values
+    flowerColorPicker.value = preset.color1;
+    flowerColorPicker2.value = preset.color2;
+
+    // Trigger input events to update visuals
+    updateParameters();
+    flowerColorPicker.dispatchEvent(new Event("input"));
+    flowerColorPicker2.dispatchEvent(new Event("input"));
+  } else {
+    console.error(`Preset '${presetName}' not found.`);
+  }
+}
+
 // Add event listeners for slider changes
 verticalResolutionSlider.addEventListener("input", updateParameters);
 radialResolutionSlider.addEventListener("input", updateParameters);
@@ -236,6 +366,19 @@ flowerColorPicker2.addEventListener("input", createVertices);
 // Add event listener for the buttons
 resetCameraButton.addEventListener("click", resetCamera);
 randomiseButton.addEventListener("click", randomiseParameters);
+hibiscusButton.addEventListener("click", () =>
+  loadFlowerFromPreset("hibiscus")
+);
+forgetMeNotButton.addEventListener("click", () =>
+  loadFlowerFromPreset("forgetMeNot")
+);
+lilyButton.addEventListener("click", () => loadFlowerFromPreset("lily"));
+morningGloryButton.addEventListener("click", () =>
+  loadFlowerFromPreset("morningGlory")
+);
+buttercupButton.addEventListener("click", () =>
+  loadFlowerFromPreset("buttercup")
+);
 
 // Sizes
 const sizes = {
