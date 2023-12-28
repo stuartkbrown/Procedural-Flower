@@ -385,6 +385,11 @@ flowerColorPicker2.addEventListener("input", createVertices);
 backgroundColorPicker.addEventListener("input", changeBackgroundColor);
 
 // Add event listener for the buttons
+document
+  .getElementById("resetDefaultButton")
+  .addEventListener("click", function () {
+    location.reload();
+  });
 resetCameraButton.addEventListener("click", resetCamera);
 randomiseButton.addEventListener("click", randomiseParameters);
 
