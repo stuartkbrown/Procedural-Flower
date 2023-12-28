@@ -116,6 +116,15 @@ function changeBackgroundColor() {
 // Set up buttons
 const resetCameraButton = document.getElementById("resetCameraButton");
 const randomiseButton = document.getElementById("randomiseButton");
+
+const toggleControlsButton = document.getElementById("toggleControlsButton");
+const controlsContainer = document.querySelector(".container");
+
+// Function to toggle the visibility of the controls
+function toggleControls() {
+  controlsContainer.classList.toggle("hidden");
+}
+
 const hibiscusButton = document.getElementById("hibiscusButton");
 const forgetMeNotButton = document.getElementById("forgetMeNotButton");
 const lilyButton = document.getElementById("lilyButton");
@@ -378,6 +387,9 @@ backgroundColorPicker.addEventListener("input", changeBackgroundColor);
 // Add event listener for the buttons
 resetCameraButton.addEventListener("click", resetCamera);
 randomiseButton.addEventListener("click", randomiseParameters);
+
+toggleControlsButton.addEventListener("click", toggleControls);
+
 hibiscusButton.addEventListener("click", () =>
   loadFlowerFromPreset("hibiscus")
 );

@@ -48,6 +48,23 @@ nav ul {
   transform: translate(-2.5%, -2.5%);
 }
 
+#toggleControlsButton {
+  background-color: rgba(255, 255, 255, 0.1);
+  z-index: 2;
+  position: absolute;
+  left: 2.5%;
+  bottom: 2.5%;
+  transform: translate(2.5%, -2.5%);
+}
+
+#toggleControlsButton:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.container.hidden {
+  display: none;
+}
+
 .controls {
   position: absolute;
   top: 6rem; /* Adjust the top position */
@@ -102,7 +119,7 @@ button {
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.1s ease;
+  transition: background-color 0.5s ease;
   margin-right: 10px;
 }
 
