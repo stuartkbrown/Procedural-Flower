@@ -11,6 +11,10 @@ const geometry = new THREE.BufferGeometry();
 const positions = [];
 const colors = [];
 
+// Create 3D cartesian axes helper
+const cartesianAxesHelper = new THREE.AxesHelper(300);
+cartesianAxesHelper.visible = false;
+
 // Parameters
 let numThetaSteps; // vertical resolution
 let numPhiSteps; // radial resolution
@@ -116,6 +120,13 @@ function changeBackgroundColor() {
 // Set up buttons
 const resetCameraButton = document.getElementById("resetCameraButton");
 const randomiseButton = document.getElementById("randomiseButton");
+
+const toggleAxesButton = document.getElementById("toggleAxesButton");
+
+// Function to toggle the visibility of the 3D axes helper
+function toggleAxesVisibility() {
+  cartesianAxesHelper.visible = !cartesianAxesHelper.visible;
+}
 
 const toggleControlsButton = document.getElementById("toggleControlsButton");
 const controlsContainer = document.querySelector(".container");
@@ -392,6 +403,7 @@ document
   });
 resetCameraButton.addEventListener("click", resetCamera);
 randomiseButton.addEventListener("click", randomiseParameters);
+toggleAxesButton.addEventListener("click", toggleAxesVisibility);
 
 toggleControlsButton.addEventListener("click", toggleControls);
 
@@ -482,6 +494,7 @@ const material = new THREE.PointsMaterial({ size: 1, vertexColors: true });
 // Create mesh with BufferGeometry and material
 const points = new THREE.Points(geometry, material);
 scene.add(points);
+scene.add(cartesianAxesHelper);
 
 // Start the animation loop
 animate();

@@ -8,6 +8,8 @@ body,
 html {
   overflow: hidden;
   font-family: "Poppins", sans-serif;
+  background-color: black;
+  user-select: none;
 }
 
 .webgl {
