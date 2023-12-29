@@ -13,7 +13,56 @@ const colors = [];
 
 // Create 3D cartesian axes helper
 const cartesianAxesHelper = new THREE.AxesHelper(300);
-cartesianAxesHelper.visible = false;
+
+// Function to toggle the visibility of the 3D axes helper
+function toggleCartesianAxesVisibility() {
+  cartesianAxesHelper.visible = !cartesianAxesHelper.visible;
+}
+
+toggleCartesianAxesVisibility();
+
+// Create 3D radial axes helper
+function createRadialAxesHelper(size, segments) {
+  const diameter = size * 2;
+  const points = [];
+
+  // Generate points for the circle
+  for (let i = 0; i <= segments; i++) {
+    const theta = (i / segments) * Math.PI * 2;
+    const x = (Math.cos(theta) * diameter) / 2;
+    const z = (Math.sin(theta) * diameter) / 2;
+    points.push(new THREE.Vector3(x, 0, z));
+  }
+
+  // Create the circle on the XZ plane
+  const circleGeometry = new THREE.BufferGeometry().setFromPoints(points);
+  const circleMaterial = new THREE.LineBasicMaterial({ color: 0xffa500 });
+  const circle = new THREE.Line(circleGeometry, circleMaterial);
+  circle.rotation.x = Math.PI / 2; // Rotate to be on the XZ plane
+  scene.add(circle);
+
+  // Create the Y-axis with length 300
+  const yAxisMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
+  const yAxisGeometry = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(0, 0, size),
+  ]);
+  const yAxis = new THREE.Line(yAxisGeometry, yAxisMaterial);
+  scene.add(yAxis);
+
+  // Return the helper objects so that we can toggle their visibility
+  return { circle, yAxis };
+}
+
+// Call the function to create the radial axes helper
+const radialAxesHelper = createRadialAxesHelper(300, 64);
+
+function toggleRadialAxesVisibility() {
+  radialAxesHelper.circle.visible = !radialAxesHelper.circle.visible;
+  radialAxesHelper.yAxis.visible = !radialAxesHelper.yAxis.visible;
+}
+
+toggleRadialAxesVisibility();
 
 // Parameters
 let numThetaSteps; // vertical resolution
@@ -122,11 +171,9 @@ const resetCameraButton = document.getElementById("resetCameraButton");
 const randomiseButton = document.getElementById("randomiseButton");
 
 const toggleAxesButton = document.getElementById("toggleAxesButton");
-
-// Function to toggle the visibility of the 3D axes helper
-function toggleAxesVisibility() {
-  cartesianAxesHelper.visible = !cartesianAxesHelper.visible;
-}
+const toggleRadialAxesButton = document.getElementById(
+  "toggleRadialAxesButton"
+);
 
 const toggleControlsButton = document.getElementById("toggleControlsButton");
 const controlsContainer = document.querySelector(".container");
@@ -403,7 +450,8 @@ document
   });
 resetCameraButton.addEventListener("click", resetCamera);
 randomiseButton.addEventListener("click", randomiseParameters);
-toggleAxesButton.addEventListener("click", toggleAxesVisibility);
+toggleAxesButton.addEventListener("click", toggleCartesianAxesVisibility);
+toggleRadialAxesButton.addEventListener("click", toggleRadialAxesVisibility);
 
 toggleControlsButton.addEventListener("click", toggleControls);
 
