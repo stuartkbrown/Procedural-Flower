@@ -108,6 +108,10 @@ nav ul {
   width: 100px; /* Adjust the width as needed */
 }
 
+.control-group input[type="checkbox"] {
+  width: 25px;
+}
+
 .control-group output {
   width: 30px; /* Adjust the width as needed */
   padding-right: 10px; /* Add right padding for spacing */

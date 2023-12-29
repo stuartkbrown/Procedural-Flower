@@ -209,12 +209,22 @@ function updateParameters() {
 
 // Function to randomize parameters
 function randomiseParameters() {
-  document.getElementById("verticalResolutionSlider").value = Math.floor(
-    Math.random() * (100 - 10 + 1) + 10
+  // Check if "Keep Resolution" checkbox is checked
+  const keepResolutionCheckbox = document.getElementById(
+    "keepResolutionCheckbox"
   );
-  document.getElementById("radialResolutionSlider").value = Math.floor(
-    Math.random() * (720 - 45 + 1) + 45
-  );
+  const keepResolution = keepResolutionCheckbox.checked;
+
+  // Randomize resolution only if "Keep Resolution" is not checked
+  if (!keepResolution) {
+    document.getElementById("verticalResolutionSlider").value = Math.floor(
+      Math.random() * (100 - 10 + 1) + 10
+    );
+    document.getElementById("radialResolutionSlider").value = Math.floor(
+      Math.random() * (720 - 45 + 1) + 45
+    );
+  }
+
   document.getElementById("petalNumberSlider").value = Math.floor(
     Math.random() * (20 - 1 + 1) + 1
   );
