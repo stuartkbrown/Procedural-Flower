@@ -209,45 +209,82 @@ function updateParameters() {
 
 // Function to randomize parameters
 function randomiseParameters() {
-  // Check if "Keep Resolution" checkbox is checked
-  const keepResolutionCheckbox = document.getElementById(
-    "keepResolutionCheckbox"
-  );
-  const keepResolution = keepResolutionCheckbox.checked;
-
-  // Randomize resolution only if "Keep Resolution" is not checked
-  if (!keepResolution) {
-    document.getElementById("verticalResolutionSlider").value = Math.floor(
-      Math.random() * (100 - 10 + 1) + 10
-    );
-    document.getElementById("radialResolutionSlider").value = Math.floor(
-      Math.random() * (720 - 45 + 1) + 45
-    );
+  // Helper function to get the checked status of a checkbox
+  function getCheckboxValue(checkboxId) {
+    const checkbox = document.getElementById(checkboxId);
+    return checkbox.checked;
   }
 
-  document.getElementById("petalNumberSlider").value = Math.floor(
-    Math.random() * (20 - 1 + 1) + 1
-  );
-  document.getElementById("diameterSlider").value = Math.floor(
-    Math.random() * (250 - 20 + 1) + 20
-  );
-  document.getElementById("petalLengthSlider").value = Math.floor(
-    Math.random() * (300 - 0 + 1)
-  );
-  document.getElementById("petalSharpnessSlider").value =
-    Math.random() * (10.0 - 0.0) + 0.0;
-  document.getElementById("heightSlider").value = Math.floor(
-    Math.random() * (600 - 0 + 1)
-  );
-  document.getElementById("curvature1Slider").value =
-    Math.random() * (4.0 - 0.0) + 0.0;
-  document.getElementById("curvature2Slider").value =
-    Math.random() * (1.0 - 0.0) + 0.0;
-  document.getElementById("bumpinessSlider").value =
-    Math.random() * (5.0 - 0.0) + 0.0;
-  document.getElementById("bumpNumberSlider").value = Math.floor(
-    Math.random() * (20 - 0 + 1)
-  );
+  // Get the checked status for each checkbox
+  const keepResolutionCheck = getCheckboxValue("keepResolutionCheckbox");
+  const flowerColour1Check = getCheckboxValue("flowerColour1Check");
+  const flowerColour2Check = getCheckboxValue("flowerColour2Check");
+  const verticalResolutionCheck = getCheckboxValue("verticalResolutionCheck");
+  const radialResolutionCheck = getCheckboxValue("radialResolutionCheck");
+  const petalNumberCheck = getCheckboxValue("petalNumberCheck");
+  const diameterCheck = getCheckboxValue("diameterCheck");
+  const petalLengthCheck = getCheckboxValue("petalLengthCheck");
+  const petalSharpnessCheck = getCheckboxValue("petalSharpnessCheck");
+  const heightCheck = getCheckboxValue("heightCheck");
+  const curvature1Check = getCheckboxValue("curvature1Check");
+  const curvature2Check = getCheckboxValue("curvature2Check");
+  const bumpinessCheck = getCheckboxValue("bumpinessCheck");
+  const bumpNumberCheck = getCheckboxValue("bumpNumberCheck");
+
+  // Randomize resolution only if "Keep Resolution" is not checked
+  if (!keepResolutionCheck) {
+    if (!verticalResolutionCheck) {
+      document.getElementById("verticalResolutionSlider").value = Math.floor(
+        Math.random() * (100 - 10 + 1) + 10
+      );
+    }
+    if (!radialResolutionCheck) {
+      document.getElementById("radialResolutionSlider").value = Math.floor(
+        Math.random() * (720 - 45 + 1) + 45
+      );
+    }
+  }
+  if (!petalNumberCheck) {
+    document.getElementById("petalNumberSlider").value = Math.floor(
+      Math.random() * (20 - 1 + 1) + 1
+    );
+  }
+  if (!diameterCheck) {
+    document.getElementById("diameterSlider").value = Math.floor(
+      Math.random() * (250 - 20 + 1) + 20
+    );
+  }
+  if (!petalLengthCheck) {
+    document.getElementById("petalLengthSlider").value = Math.floor(
+      Math.random() * (300 - 0 + 1)
+    );
+  }
+  if (!petalSharpnessCheck) {
+    document.getElementById("petalSharpnessSlider").value =
+      Math.random() * (10.0 - 0.0) + 0.0;
+  }
+  if (!heightCheck) {
+    document.getElementById("heightSlider").value = Math.floor(
+      Math.random() * (600 - 0 + 1)
+    );
+  }
+  if (!curvature1Check) {
+    document.getElementById("curvature1Slider").value =
+      Math.random() * (4.0 - 0.0) + 0.0;
+  }
+  if (!curvature2Check) {
+    document.getElementById("curvature2Slider").value =
+      Math.random() * (1.0 - 0.0) + 0.0;
+  }
+  if (!bumpinessCheck) {
+    document.getElementById("bumpinessSlider").value =
+      Math.random() * (5.0 - 0.0) + 0.0;
+  }
+  if (!bumpNumberCheck) {
+    document.getElementById("bumpNumberSlider").value = Math.floor(
+      Math.random() * (20 - 0 + 1)
+    );
+  }
 
   // Set the values of the output elements
   document.getElementById(
@@ -286,19 +323,21 @@ function randomiseParameters() {
   updateParameters();
 
   // Randomize color values for the color pickers
-  const randomColor1 = getRandomColor();
-  const randomColor2 = getRandomColor();
+  if (!flowerColour1Check) {
+    const randomColor1 = getRandomColor();
+    document.getElementById("flowerColourPicker").value = randomColor1;
+    document
+      .getElementById("flowerColourPicker")
+      .dispatchEvent(new Event("input"));
+  }
 
-  document.getElementById("flowerColourPicker").value = randomColor1;
-  document.getElementById("flowerColourPicker2").value = randomColor2;
-
-  // Trigger the input event for color pickers to update the visuals
-  document
-    .getElementById("flowerColourPicker")
-    .dispatchEvent(new Event("input"));
-  document
-    .getElementById("flowerColourPicker2")
-    .dispatchEvent(new Event("input"));
+  if (!flowerColour2Check) {
+    const randomColor2 = getRandomColor();
+    document.getElementById("flowerColourPicker2").value = randomColor2;
+    document
+      .getElementById("flowerColourPicker2")
+      .dispatchEvent(new Event("input"));
+  }
 }
 
 // Function to get a random color in hex format
