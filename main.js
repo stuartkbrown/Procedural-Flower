@@ -1,6 +1,20 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
+// Parameters
+let numThetaSteps; // vertical resolution
+let numPhiSteps; // radial resolution
+
+let petalNumber;
+let petalLength;
+let diameter;
+let petalSharpness;
+let height;
+let curvature1;
+let curvature2;
+let bumpiness;
+let bumpNumber;
+
 // Scene
 const scene = new THREE.Scene();
 
@@ -11,17 +25,176 @@ const geometry = new THREE.BufferGeometry();
 const positions = [];
 const colors = [];
 
-// Create 3D cartesian axes helper
-const cartesianAxesHelper = new THREE.AxesHelper(300);
+// Preset configurations
+const presets = {
+  hibiscus: {
+    verticalResolution: 60,
+    radialResolution: 360,
+    petalNumber: 5,
+    petalLength: 200,
+    diameter: 60,
+    petalSharpness: 0.4,
+    height: 300,
+    curvature1: 0.8,
+    curvature2: 0.2,
+    bumpiness: 2.5,
+    bumpNumber: 12,
+    color1: "#87CEEB",
+    color2: "#CC3168",
+  },
+  forgetMeNot: {
+    verticalResolution: 60,
+    radialResolution: 360,
+    petalNumber: 5,
+    petalLength: 110,
+    diameter: 130,
+    petalSharpness: 1,
+    height: 30,
+    curvature1: 2.7,
+    curvature2: 0.4,
+    bumpiness: 5,
+    bumpNumber: 8,
+    color1: "#6495ED",
+    color2: "#00FFFF",
+  },
+  morningGlory: {
+    verticalResolution: 60,
+    radialResolution: 360,
+    petalNumber: 6,
+    petalLength: 80,
+    diameter: 130,
+    petalSharpness: 1.4,
+    height: 500,
+    curvature1: 0.5,
+    curvature2: 0.3,
+    bumpiness: 1.5,
+    bumpNumber: 12,
+    color1: "#4169E1",
+    color2: "#87CEEB",
+  },
+  lily: {
+    verticalResolution: 60,
+    radialResolution: 360,
+    petalNumber: 5,
+    petalLength: 140,
+    diameter: 20,
+    petalSharpness: 3,
+    height: 400,
+    curvature1: 0.6,
+    curvature2: 0.2,
+    bumpiness: 1.5,
+    bumpNumber: 12,
+    color1: "#8B008B",
+    color2: "#FFFF00",
+  },
+  buttercup: {
+    verticalResolution: 60,
+    radialResolution: 360,
+    petalNumber: 5,
+    petalLength: 160,
+    diameter: 40,
+    petalSharpness: 0.8,
+    height: 20,
+    curvature1: 2.9,
+    curvature2: 0.0,
+    bumpiness: 1.5,
+    bumpNumber: 8,
+    color1: "#FFD700",
+    color2: "#FF8C00",
+  },
+};
 
-// Function to toggle the visibility of the 3D axes helper
-function toggleCartesianAxesVisibility() {
-  cartesianAxesHelper.visible = !cartesianAxesHelper.visible;
+// Initialize sliders and color pickers
+const sliders = [
+  "verticalResolution",
+  "radialResolution",
+  "petalNumber",
+  "petalLength",
+  "diameter",
+  "petalSharpness",
+  "height",
+  "curvature1",
+  "curvature2",
+  "bumpiness",
+  "bumpNumber",
+];
+const colorPickers = ["flowerColourPicker", "flowerColourPicker2"];
+
+// Axes helpers
+const cartesianAxesHelper = new THREE.AxesHelper(300);
+const radialAxesHelper = createRadialAxesHelper(300, 64);
+
+// Sizes
+const sizes = {
+  width: window.innerWidth,
+  height: window.innerHeight,
+};
+
+// Camera
+const camera = initCamera();
+
+// Renderer
+const renderer = initRenderer();
+
+// Controls
+const controls = initControls();
+
+// Event listeners
+initEventListeners();
+
+// Animation
+animate();
+
+function initRadialAxesVisibility() {
+  radialAxesHelper.circle.visible = !radialAxesHelper.circle.visible;
+  radialAxesHelper.yAxis.visible = !radialAxesHelper.yAxis.visible;
 }
 
-toggleCartesianAxesVisibility();
+function initControls() {
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  return controls;
+}
 
-// Create 3D radial axes helper
+function initCamera() {
+  const camera = new THREE.PerspectiveCamera(
+    75,
+    sizes.width / sizes.height,
+    0.1,
+    8000
+  );
+  camera.position.z = 550;
+  return camera;
+}
+
+function initRenderer() {
+  const canvas = document.querySelector(".webgl");
+  const renderer = new THREE.WebGLRenderer({ canvas });
+  renderer.setSize(sizes.width, sizes.height);
+  return renderer;
+}
+
+function initEventListeners() {
+  window.addEventListener("resize", onWindowResize);
+  sliders.forEach((slider) => {
+    const sliderElement = document.getElementById(`${slider}Slider`);
+    sliderElement.addEventListener("input", updateParameters);
+  });
+  colorPickers.forEach((colorPicker) => {
+    const colorPickerElement = document.getElementById(colorPicker);
+    colorPickerElement.addEventListener("input", createVertices);
+  });
+}
+
+function onWindowResize() {
+  sizes.width = window.innerWidth;
+  sizes.height = window.innerHeight;
+  camera.aspect = sizes.width / sizes.height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(sizes.width, sizes.height);
+}
+
 function createRadialAxesHelper(size, segments) {
   const diameter = size * 2;
   const points = [];
@@ -54,29 +227,22 @@ function createRadialAxesHelper(size, segments) {
   return { circle, yAxis };
 }
 
-// Call the function to create the radial axes helper
-const radialAxesHelper = createRadialAxesHelper(300, 64);
+function updateParameters() {
+  numThetaSteps = parseFloat(verticalResolutionSlider.value);
+  numPhiSteps = parseFloat(radialResolutionSlider.value);
 
-function toggleRadialAxesVisibility() {
-  radialAxesHelper.circle.visible = !radialAxesHelper.circle.visible;
-  radialAxesHelper.yAxis.visible = !radialAxesHelper.yAxis.visible;
+  petalNumber = parseFloat(petalNumberSlider.value);
+  petalLength = parseFloat(petalLengthSlider.value);
+  diameter = parseFloat(diameterSlider.value);
+  petalSharpness = parseFloat(petalSharpnessSlider.value);
+  height = parseFloat(heightSlider.value);
+  curvature1 = parseFloat(curvature1Slider.value);
+  curvature2 = parseFloat(curvature2Slider.value);
+  bumpiness = parseFloat(bumpinessSlider.value);
+  bumpNumber = parseFloat(bumpNumberSlider.value);
+
+  createVertices(); // Recreate vertices based on updated parameters
 }
-
-toggleRadialAxesVisibility();
-
-// Parameters
-let numThetaSteps; // vertical resolution
-let numPhiSteps; // radial resolution
-
-let petalNumber;
-let petalLength;
-let diameter;
-let petalSharpness;
-let height;
-let curvature1;
-let curvature2;
-let bumpiness;
-let bumpNumber;
 
 // Function to calculate vertex position based on parameters
 function calculateVertex(theta, phi) {
@@ -103,7 +269,19 @@ function calculateVertex(theta, phi) {
   return new THREE.Vector3(x, y, z);
 }
 
-// Create vertices
+// Functions from p5.js code
+function vShape(A, r, a, b) {
+  return (
+    A *
+    Math.pow(Math.E, -b * Math.pow(Math.abs(r), 1.5)) *
+    Math.pow(Math.abs(r), a)
+  );
+}
+
+function perturbation(A, r, p, angle) {
+  return 1 + A * Math.pow(r, 2) * Math.sin(p * angle);
+}
+
 function createVertices() {
   positions.length = 0;
   colors.length = 0;
@@ -133,78 +311,6 @@ function createVertices() {
     new THREE.Float32BufferAttribute(positions, 3)
   );
   geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
-}
-
-// Set up sliders
-const verticalResolutionSlider = document.getElementById(
-  "verticalResolutionSlider"
-);
-const radialResolutionSlider = document.getElementById(
-  "radialResolutionSlider"
-);
-
-const petalNumberSlider = document.getElementById("petalNumberSlider");
-const petalLengthSlider = document.getElementById("petalLengthSlider");
-const diameterSlider = document.getElementById("diameterSlider");
-const petalSharpnessSlider = document.getElementById("petalSharpnessSlider");
-const heightSlider = document.getElementById("heightSlider");
-const curvature1Slider = document.getElementById("curvature1Slider");
-const curvature2Slider = document.getElementById("curvature2Slider");
-const bumpinessSlider = document.getElementById("bumpinessSlider");
-const bumpNumberSlider = document.getElementById("bumpNumberSlider");
-
-// Set up colour pickers
-const flowerColorPicker = document.getElementById("flowerColourPicker");
-const flowerColorPicker2 = document.getElementById("flowerColourPicker2");
-
-// Set up background color picker
-const backgroundColorPicker = document.getElementById("backgroundColorPicker");
-
-// Function to change the background color
-function changeBackgroundColor() {
-  const color = backgroundColorPicker.value;
-  renderer.setClearColor(new THREE.Color(color), 1);
-}
-
-// Set up buttons
-const resetCameraButton = document.getElementById("resetCameraButton");
-const randomiseButton = document.getElementById("randomiseButton");
-
-const toggleAxesButton = document.getElementById("toggleAxesButton");
-const toggleRadialAxesButton = document.getElementById(
-  "toggleRadialAxesButton"
-);
-
-const toggleControlsButton = document.getElementById("toggleControlsButton");
-const controlsContainer = document.querySelector(".container");
-
-// Function to toggle the visibility of the controls
-function toggleControls() {
-  controlsContainer.classList.toggle("hidden");
-}
-
-const hibiscusButton = document.getElementById("hibiscusButton");
-const forgetMeNotButton = document.getElementById("forgetMeNotButton");
-const lilyButton = document.getElementById("lilyButton");
-const morningGloryButton = document.getElementById("morningGloryButton");
-const buttercupButton = document.getElementById("buttercupButton");
-
-// Function to update parameters based on slider values
-function updateParameters() {
-  numThetaSteps = parseFloat(verticalResolutionSlider.value);
-  numPhiSteps = parseFloat(radialResolutionSlider.value);
-
-  petalNumber = parseFloat(petalNumberSlider.value);
-  petalLength = parseFloat(petalLengthSlider.value);
-  diameter = parseFloat(diameterSlider.value);
-  petalSharpness = parseFloat(petalSharpnessSlider.value);
-  height = parseFloat(heightSlider.value);
-  curvature1 = parseFloat(curvature1Slider.value);
-  curvature2 = parseFloat(curvature2Slider.value);
-  bumpiness = parseFloat(bumpinessSlider.value);
-  bumpNumber = parseFloat(bumpNumberSlider.value);
-
-  createVertices(); // Recreate vertices based on updated parameters
 }
 
 // Function to randomize parameters
@@ -340,94 +446,17 @@ function randomiseParameters() {
   }
 }
 
-// Function to get a random color in hex format
 function getRandomColor() {
   return "#" + Math.floor(Math.random() * 16777215).toString(16);
 }
 
-// Preset configurations
-const presets = {
-  hibiscus: {
-    verticalResolution: 60,
-    radialResolution: 360,
-    petalNumber: 5,
-    petalLength: 200,
-    diameter: 60,
-    petalSharpness: 0.4,
-    height: 300,
-    curvature1: 0.8,
-    curvature2: 0.2,
-    bumpiness: 2.5,
-    bumpNumber: 12,
-    color1: "#87CEEB",
-    color2: "#CC3168",
-  },
-  forgetMeNot: {
-    verticalResolution: 60,
-    radialResolution: 360,
-    petalNumber: 5,
-    petalLength: 110,
-    diameter: 130,
-    petalSharpness: 1,
-    height: 30,
-    curvature1: 2.7,
-    curvature2: 0.4,
-    bumpiness: 5,
-    bumpNumber: 8,
-    color1: "#6495ED",
-    color2: "#00FFFF",
-  },
-  morningGlory: {
-    verticalResolution: 60,
-    radialResolution: 360,
-    petalNumber: 6,
-    petalLength: 80,
-    diameter: 130,
-    petalSharpness: 1.4,
-    height: 500,
-    curvature1: 0.5,
-    curvature2: 0.3,
-    bumpiness: 1.5,
-    bumpNumber: 12,
-    color1: "#4169E1",
-    color2: "#87CEEB",
-  },
-  lily: {
-    verticalResolution: 60,
-    radialResolution: 360,
-    petalNumber: 5,
-    petalLength: 140,
-    diameter: 20,
-    petalSharpness: 3,
-    height: 400,
-    curvature1: 0.6,
-    curvature2: 0.2,
-    bumpiness: 1.5,
-    bumpNumber: 12,
-    color1: "#8B008B",
-    color2: "#FFFF00",
-  },
-  buttercup: {
-    verticalResolution: 60,
-    radialResolution: 360,
-    petalNumber: 5,
-    petalLength: 160,
-    diameter: 40,
-    petalSharpness: 0.8,
-    height: 20,
-    curvature1: 2.9,
-    curvature2: 0.0,
-    bumpiness: 1.5,
-    bumpNumber: 8,
-    color1: "#FFD700",
-    color2: "#FF8C00",
-  },
-};
-
-// Function to load flower from a preset
 function loadFlowerFromPreset(presetName) {
   const preset = presets[presetName];
   if (preset) {
+    // Declare flowerColorPicker and flowerColorPicker2 variables
+    const flowerColorPicker = document.getElementById("flowerColourPicker");
+    const flowerColorPicker2 = document.getElementById("flowerColourPicker2");
+
     // Set slider values
     verticalResolutionSlider.value = preset.verticalResolution;
     radialResolutionSlider.value = preset.radialResolution;
@@ -470,118 +499,119 @@ function loadFlowerFromPreset(presetName) {
   }
 }
 
-// Add event listeners for slider changes
-verticalResolutionSlider.addEventListener("input", updateParameters);
-radialResolutionSlider.addEventListener("input", updateParameters);
-
-petalNumberSlider.addEventListener("input", updateParameters);
-petalLengthSlider.addEventListener("input", updateParameters);
-diameterSlider.addEventListener("input", updateParameters);
-petalSharpnessSlider.addEventListener("input", updateParameters);
-heightSlider.addEventListener("input", updateParameters);
-curvature1Slider.addEventListener("input", updateParameters);
-curvature2Slider.addEventListener("input", updateParameters);
-bumpinessSlider.addEventListener("input", updateParameters);
-bumpNumberSlider.addEventListener("input", updateParameters);
-
-// Add event listener for colour pickers
-flowerColorPicker.addEventListener("input", createVertices);
-flowerColorPicker2.addEventListener("input", createVertices);
-
-// Add event listener for the background color picker
-backgroundColorPicker.addEventListener("input", changeBackgroundColor);
-
-// Add event listener for the buttons
-document
-  .getElementById("resetDefaultButton")
-  .addEventListener("click", function () {
-    location.reload();
-  });
-resetCameraButton.addEventListener("click", resetCamera);
-randomiseButton.addEventListener("click", randomiseParameters);
-toggleAxesButton.addEventListener("click", toggleCartesianAxesVisibility);
-toggleRadialAxesButton.addEventListener("click", toggleRadialAxesVisibility);
-
-toggleControlsButton.addEventListener("click", toggleControls);
-
-hibiscusButton.addEventListener("click", () =>
-  loadFlowerFromPreset("hibiscus")
-);
-forgetMeNotButton.addEventListener("click", () =>
-  loadFlowerFromPreset("forgetMeNot")
-);
-lilyButton.addEventListener("click", () => loadFlowerFromPreset("lily"));
-morningGloryButton.addEventListener("click", () =>
-  loadFlowerFromPreset("morningGlory")
-);
-buttercupButton.addEventListener("click", () =>
-  loadFlowerFromPreset("buttercup")
-);
-
-// Sizes
-const sizes = {
-  width: window.innerWidth,
-  height: window.innerHeight,
-};
-
-// Camera
-const camera = new THREE.PerspectiveCamera(
-  75,
-  sizes.width / sizes.height,
-  0.1,
-  8000
-);
-camera.position.z = 550;
-
-// Function to reset camera position and orientation
 function resetCamera() {
   camera.position.set(0, 0, 550); // Set the initial camera position
   camera.lookAt(0, 0, 0); // Look at the center of the scene
   controls.reset(); // Reset controls to their initial state
 }
 
-// Renderer
-const canvas = document.querySelector(".webgl");
-const renderer = new THREE.WebGLRenderer({ canvas });
-renderer.setSize(sizes.width, sizes.height);
+function toggleCartesianAxesVisibility() {
+  cartesianAxesHelper.visible = !cartesianAxesHelper.visible;
+}
 
-// Controls
-const controls = new OrbitControls(camera, canvas);
-controls.enableDamping = true;
-controls.dampingFactor = 0.08;
+function toggleRadialAxesVisibility() {
+  radialAxesHelper.circle.visible = !radialAxesHelper.circle.visible;
+  radialAxesHelper.yAxis.visible = !radialAxesHelper.yAxis.visible;
+}
 
-// Resize
-window.addEventListener("resize", () => {
-  sizes.width = window.innerWidth;
-  sizes.height = window.innerHeight;
+function toggleControls() {
+  controlsContainer.classList.toggle("hidden");
+}
 
-  camera.aspect = sizes.width / sizes.height;
-  camera.updateProjectionMatrix();
-
-  renderer.setSize(sizes.width, sizes.height);
-});
-
-// Animation
-const animate = () => {
+function animate() {
   controls.update();
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
-};
-
-// Functions from p5.js code
-function vShape(A, r, a, b) {
-  return (
-    A *
-    Math.pow(Math.E, -b * Math.pow(Math.abs(r), 1.5)) *
-    Math.pow(Math.abs(r), a)
-  );
 }
 
-function perturbation(A, r, p, angle) {
-  return 1 + A * Math.pow(r, 2) * Math.sin(p * angle);
+// Function to set up sliders and add event listeners
+function setupSliders() {
+  const sliders = [
+    "verticalResolutionSlider",
+    "radialResolutionSlider",
+    "petalNumberSlider",
+    "petalLengthSlider",
+    "diameterSlider",
+    "petalSharpnessSlider",
+    "heightSlider",
+    "curvature1Slider",
+    "curvature2Slider",
+    "bumpinessSlider",
+    "bumpNumberSlider",
+  ];
+
+  sliders.forEach((slider) => {
+    const sliderElement = document.getElementById(`${slider}`);
+    sliderElement.addEventListener("input", updateParameters);
+  });
 }
 
-// Initial creation of vertices
+// Function to set up color pickers and add event listeners
+function setupColorPickers() {
+  const colorPickers = ["flowerColourPicker", "flowerColourPicker2"];
+
+  colorPickers.forEach((colorPicker) => {
+    const colorPickerElement = document.getElementById(colorPicker);
+    colorPickerElement.addEventListener("input", createVertices);
+  });
+}
+
+// Function to set up buttons and add event listeners
+function setupButtons() {
+  const buttons = {
+    resetCameraButton,
+    randomiseButton,
+    toggleAxesButton,
+    toggleRadialAxesButton,
+    toggleControlsButton,
+    hibiscusButton,
+    forgetMeNotButton,
+    lilyButton,
+    morningGloryButton,
+    buttercupButton,
+  };
+
+  Object.entries(buttons).forEach(([buttonId, buttonElement]) => {
+    if (buttonElement) {
+      buttonElement.addEventListener("click", () =>
+        handleButtonClick(buttonId)
+      );
+    }
+  });
+}
+
+// Function to handle button clicks
+function handleButtonClick(buttonId) {
+  const buttonActions = {
+    resetCameraButton: resetCamera,
+    randomiseButton: randomiseParameters,
+    toggleAxesButton: toggleCartesianAxesVisibility,
+    toggleRadialAxesButton: toggleRadialAxesVisibility,
+    toggleControlsButton: toggleControls,
+    hibiscusButton: () => loadFlowerFromPreset("hibiscus"),
+    forgetMeNotButton: () => loadFlowerFromPreset("forgetMeNot"),
+    lilyButton: () => loadFlowerFromPreset("lily"),
+    morningGloryButton: () => loadFlowerFromPreset("morningGlory"),
+    buttercupButton: () => loadFlowerFromPreset("buttercup"),
+  };
+
+  const buttonAction = buttonActions[buttonId];
+  if (buttonAction) {
+    buttonAction();
+  } else {
+    console.error(`Action for button '${buttonId}' not defined.`);
+  }
+}
+
+// Set up sliders, color pickers, and buttons
+setupSliders();
+setupColorPickers();
+setupButtons();
+
+// Initial setup
+toggleCartesianAxesVisibility();
+initRadialAxesVisibility();
+resetCamera();
 updateParameters();
 createVertices();
 
@@ -592,6 +622,3 @@ const material = new THREE.PointsMaterial({ size: 1, vertexColors: true });
 const points = new THREE.Points(geometry, material);
 scene.add(points);
 scene.add(cartesianAxesHelper);
-
-// Start the animation loop
-animate();
