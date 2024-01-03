@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
+window.GLTFExporter = GLTFExporter;
 
 // Parameters
 let numThetaSteps; // vertical resolution
@@ -24,6 +26,51 @@ const geometry = new THREE.BufferGeometry();
 // Define arrays to hold vertex positions
 const positions = [];
 const colors = [];
+
+// GLTF Exporter
+const gltfExporter = new GLTFExporter();
+
+// Function to export the current geometry as a GLTF model
+function exportGLTF() {
+  // Create an input element
+  const input = document.createElement("input");
+  input.type = "file";
+  input.style.display = "none";
+  input.accept = ".gltf"; // Set accepted file type, optional
+
+  // Append input to the body
+  document.body.appendChild(input);
+
+  // Trigger a click on the input
+  input.click();
+
+  // Handle file selection
+  input.addEventListener("change", (event) => {
+    const file = event.target.files[0];
+
+    if (file) {
+      const link = document.createElement("a");
+      link.style.display = "none";
+      document.body.appendChild(link);
+
+      const blob = new Blob([file], { type: "application/octet-stream" });
+      const url = URL.createObjectURL(blob);
+
+      link.href = url;
+      link.download = file.name;
+      link.click();
+
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      // Remove the input element
+      document.body.removeChild(input);
+    }
+  });
+}
+
+// Add event listener to a button with id "exportButton"
+document.getElementById("exportGLTF").addEventListener("click", exportGLTF);
 
 // Preset configurations
 const presets = {
@@ -515,6 +562,7 @@ function toggleRadialAxesVisibility() {
 }
 
 function toggleControls() {
+  const controlsContainer = document.querySelector(".container");
   controlsContainer.classList.toggle("hidden");
 }
 
