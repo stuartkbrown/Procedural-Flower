@@ -646,6 +646,19 @@ function setupColorPickers() {
     const colorPickerElement = document.getElementById(colorPicker);
     colorPickerElement.addEventListener("input", createVerticesAndTriangles);
   });
+
+  // Set up background color picker
+  const backgroundColorPicker = document.getElementById(
+    "backgroundColorPicker"
+  );
+  // Add event listener for the background color picker
+  backgroundColorPicker.addEventListener("input", changeBackgroundColor);
+}
+
+// Function to change the background color
+function changeBackgroundColor() {
+  const color = backgroundColorPicker.value;
+  renderer.setClearColor(new THREE.Color(color), 1);
 }
 
 // Function to set up buttons and add event listeners
@@ -711,13 +724,38 @@ createVerticesAndTriangles();
 geometry.computeVertexNormals();
 
 // Create material
-//const material = new THREE.PointsMaterial({ size: 1, vertexColors: true });
 const material = new THREE.MeshBasicMaterial({
   vertexColors: true,
   side: THREE.DoubleSide,
 });
+const pointsMaterial = new THREE.PointsMaterial({
+  size: 1,
+  vertexColors: true,
+});
 
 // Create mesh with BufferGeometry and material
-const points = new THREE.Mesh(geometry, material);
+const mesh = new THREE.Mesh(geometry, material);
+const points = new THREE.Points(geometry, pointsMaterial);
+scene.add(mesh);
 scene.add(points);
+points.visible = false;
 scene.add(cartesianAxesHelper);
+
+// Function to switch between display modes
+function switchDisplayMode() {
+  const dropdown = document.getElementById("displayModeDropdown");
+  const selectedValue = dropdown.value;
+
+  // Toggle visibility of mesh and points
+  if (selectedValue === "triangles") {
+    mesh.visible = true;
+    points.visible = false;
+  } else if (selectedValue === "points") {
+    mesh.visible = false;
+    points.visible = true;
+  }
+}
+
+document
+  .getElementById("displayModeDropdown")
+  .addEventListener("change", switchDisplayMode);
