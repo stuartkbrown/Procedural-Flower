@@ -230,7 +230,7 @@ function initEventListeners() {
   });
   colorPickers.forEach((colorPicker) => {
     const colorPickerElement = document.getElementById(colorPicker);
-    colorPickerElement.addEventListener("input", createVertices);
+    colorPickerElement.addEventListener("input", createVerticesAndTriangles);
   });
 }
 
@@ -288,7 +288,7 @@ function updateParameters() {
   bumpiness = parseFloat(bumpinessSlider.value);
   bumpNumber = parseFloat(bumpNumberSlider.value);
 
-  createVertices(); // Recreate vertices based on updated parameters
+  createVerticesAndTriangles(); // Recreate vertices based on updated parameters
 }
 
 // Function to calculate vertex position based on parameters
@@ -329,6 +329,11 @@ function perturbation(A, r, p, angle) {
   return 1 + A * Math.pow(r, 2) * Math.sin(p * angle);
 }
 
+function createVerticesAndTriangles() {
+  createVertices();
+  createTriangles();
+}
+
 function createVertices() {
   positions.length = 0;
   colors.length = 0;
@@ -358,6 +363,45 @@ function createVertices() {
     new THREE.Float32BufferAttribute(positions, 3)
   );
   geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+}
+
+function createTriangles() {
+  // Assuming numThetaSteps and numPhiSteps are defined globally
+  const indices = [];
+
+  // Define a helper function to get the index of a vertex in the grid
+  function getIndex(theta, phi) {
+    return theta * numPhiSteps + phi;
+  }
+
+  // Create triangles by connecting vertices
+  for (let theta = 0; theta < numThetaSteps - 1; theta += 1) {
+    for (let phi = 0; phi < numPhiSteps - 1; phi += 1) {
+      // Define the vertices of the current quad
+      const v1 = getIndex(theta, phi);
+      const v2 = getIndex(theta + 1, phi);
+      const v3 = getIndex(theta + 1, phi + 1);
+      const v4 = getIndex(theta, phi + 1);
+
+      // Create two triangles from the quad
+      indices.push(v1, v2, v3); // Triangle 1
+      indices.push(v1, v3, v4); // Triangle 2
+    }
+
+    // Connect the last and first columns
+    const lastColumnV1 = getIndex(theta, numPhiSteps - 1);
+    const lastColumnV2 = getIndex(theta + 1, numPhiSteps - 1);
+    const firstColumnV1 = getIndex(theta, 0);
+    const firstColumnV2 = getIndex(theta + 1, 0);
+
+    // Create triangles to connect last and first columns
+    indices.push(lastColumnV1, lastColumnV2, firstColumnV1);
+    indices.push(lastColumnV2, firstColumnV1, firstColumnV2);
+  }
+
+  // Now you have the indices for the triangles
+  // You can use these indices to create faces in your BufferGeometry
+  geometry.setIndex(indices);
 }
 
 // Function to randomize parameters
@@ -600,7 +644,7 @@ function setupColorPickers() {
 
   colorPickers.forEach((colorPicker) => {
     const colorPickerElement = document.getElementById(colorPicker);
-    colorPickerElement.addEventListener("input", createVertices);
+    colorPickerElement.addEventListener("input", createVerticesAndTriangles);
   });
 }
 
@@ -608,6 +652,7 @@ function setupColorPickers() {
 function setupButtons() {
   const buttons = {
     resetCameraButton,
+    resetDefaultButton,
     randomiseButton,
     toggleAxesButton,
     toggleRadialAxesButton,
@@ -632,6 +677,7 @@ function setupButtons() {
 function handleButtonClick(buttonId) {
   const buttonActions = {
     resetCameraButton: resetCamera,
+    resetDefaultButton: () => location.reload(),
     randomiseButton: randomiseParameters,
     toggleAxesButton: toggleCartesianAxesVisibility,
     toggleRadialAxesButton: toggleRadialAxesVisibility,
@@ -661,12 +707,17 @@ toggleCartesianAxesVisibility();
 initRadialAxesVisibility();
 resetCamera();
 updateParameters();
-createVertices();
+createVerticesAndTriangles();
+geometry.computeVertexNormals();
 
 // Create material
-const material = new THREE.PointsMaterial({ size: 1, vertexColors: true });
+//const material = new THREE.PointsMaterial({ size: 1, vertexColors: true });
+const material = new THREE.MeshBasicMaterial({
+  vertexColors: true,
+  side: THREE.DoubleSide,
+});
 
 // Create mesh with BufferGeometry and material
-const points = new THREE.Points(geometry, material);
+const points = new THREE.Mesh(geometry, material);
 scene.add(points);
 scene.add(cartesianAxesHelper);
