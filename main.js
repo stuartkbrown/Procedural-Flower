@@ -23,6 +23,9 @@ const scene = new THREE.Scene();
 // Create Buffer Geometry
 const geometry = new THREE.BufferGeometry();
 
+// Create wireframe geometry
+let currentWireframe = null;
+
 // Define arrays to hold vertex positions
 const positions = [];
 const colors = [];
@@ -332,6 +335,11 @@ function perturbation(A, r, p, angle) {
 function createVerticesAndTriangles() {
   createVertices();
   createTriangles();
+  const dropdown = document.getElementById("displayModeDropdown");
+  const selectedValue = dropdown.value;
+  if (selectedValue === "wireframe") {
+    addOrUpdateWireframeFromGeometry(geometry);
+  }
 }
 
 function createVertices() {
@@ -710,6 +718,26 @@ function handleButtonClick(buttonId) {
   }
 }
 
+function addOrUpdateWireframeFromGeometry(geometry) {
+  // Remove the existing wireframe if there is one
+  if (currentWireframe !== null) {
+    scene.remove(currentWireframe);
+  }
+
+  // Create a new wireframe
+  const wireframeGeometry = new THREE.WireframeGeometry(geometry);
+  const wireframe = new THREE.LineSegments(wireframeGeometry);
+  wireframe.material.depthTest = false;
+  wireframe.material.opacity = 0.25;
+  wireframe.material.transparent = true;
+
+  // Add the new wireframe to the scene
+  scene.add(wireframe);
+
+  // Update the currentWireframe variable
+  currentWireframe = wireframe;
+}
+
 // Set up sliders, color pickers, and buttons
 setupSliders();
 setupColorPickers();
@@ -750,9 +778,19 @@ function switchDisplayMode() {
   if (selectedValue === "triangles") {
     mesh.visible = true;
     points.visible = false;
+    if (currentWireframe != null) {
+      currentWireframe.visible = false;
+    }
   } else if (selectedValue === "points") {
     mesh.visible = false;
     points.visible = true;
+    if (currentWireframe != null) {
+      currentWireframe.visible = false;
+    }
+  } else if (selectedValue === "wireframe") {
+    mesh.visible = false;
+    points.visible = false;
+    addOrUpdateWireframeFromGeometry(geometry);
   }
 }
 
