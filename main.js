@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
-window.GLTFExporter = GLTFExporter;
+import { OBJExporter } from "three/addons/exporters/OBJExporter.js";
 
 // Parameters
 let numThetaSteps; // vertical resolution
@@ -30,50 +29,21 @@ let currentWireframe = null;
 const positions = [];
 const colors = [];
 
-// GLTF Exporter
-const gltfExporter = new GLTFExporter();
+function exportOBJ() {
+  const exporter = new OBJExporter();
+  const result = exporter.parse(mesh); // Assuming 'mesh' is your THREE.Mesh object
 
-// Function to export the current geometry as a GLTF model
-function exportGLTF() {
-  // Create an input element
-  const input = document.createElement("input");
-  input.type = "file";
-  input.style.display = "none";
-  input.accept = ".gltf"; // Set accepted file type, optional
-
-  // Append input to the body
-  document.body.appendChild(input);
-
-  // Trigger a click on the input
-  input.click();
-
-  // Handle file selection
-  input.addEventListener("change", (event) => {
-    const file = event.target.files[0];
-
-    if (file) {
-      const link = document.createElement("a");
-      link.style.display = "none";
-      document.body.appendChild(link);
-
-      const blob = new Blob([file], { type: "application/octet-stream" });
-      const url = URL.createObjectURL(blob);
-
-      link.href = url;
-      link.download = file.name;
-      link.click();
-
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      // Remove the input element
-      document.body.removeChild(input);
-    }
-  });
+  // Save the OBJ data to a file
+  saveString(result, "ProceduralFlower.obj");
 }
 
-// Add event listener to a button with id "exportButton"
-document.getElementById("exportGLTF").addEventListener("click", exportGLTF);
+function saveString(text, filename) {
+  const blob = new Blob([text], { type: "text/plain" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+}
 
 // Preset configurations
 const presets = {
@@ -678,6 +648,7 @@ function setupButtons() {
     toggleAxesButton,
     toggleRadialAxesButton,
     toggleControlsButton,
+    exportOBJButton,
     hibiscusButton,
     forgetMeNotButton,
     lilyButton,
@@ -703,6 +674,7 @@ function handleButtonClick(buttonId) {
     toggleAxesButton: toggleCartesianAxesVisibility,
     toggleRadialAxesButton: toggleRadialAxesVisibility,
     toggleControlsButton: toggleControls,
+    exportOBJButton: exportOBJ,
     hibiscusButton: () => loadFlowerFromPreset("hibiscus"),
     forgetMeNotButton: () => loadFlowerFromPreset("forgetMeNot"),
     lilyButton: () => loadFlowerFromPreset("lily"),
