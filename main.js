@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { OBJExporter } from "three/addons/exporters/OBJExporter.js";
+import { exportOBJ } from "./export.js";
+import { presets } from "./presets.js";
 
 // Parameters
 let numThetaSteps; // vertical resolution
@@ -29,116 +30,50 @@ let currentWireframe = null;
 const positions = [];
 const colors = [];
 
-function exportOBJ() {
-  const exporter = new OBJExporter();
-  const result = exporter.parse(mesh); // Assuming 'mesh' is your THREE.Mesh object
-
-  // Save the OBJ data to a file
-  saveString(result, "ProceduralFlower.obj");
-}
-
-function saveString(text, filename) {
-  const blob = new Blob([text], { type: "text/plain" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = filename;
-  link.click();
-}
-
-// Preset configurations
-const presets = {
-  hibiscus: {
-    verticalResolution: 60,
-    radialResolution: 360,
-    petalNumber: 5,
-    petalLength: 200,
-    diameter: 60,
-    petalSharpness: 0.4,
-    height: 300,
-    curvature1: 0.8,
-    curvature2: 0.2,
-    bumpiness: 2.5,
-    bumpNumber: 12,
-    color1: "#87CEEB",
-    color2: "#CC3168",
+// Initialize sliders and color pickers
+const sliderInfo = {
+  verticalResolution: {
+    id: "verticalResolutionSlider",
+    minValue: 10,
+    maxValue: 100,
   },
-  forgetMeNot: {
-    verticalResolution: 60,
-    radialResolution: 360,
-    petalNumber: 5,
-    petalLength: 110,
-    diameter: 130,
-    petalSharpness: 1,
-    height: 30,
-    curvature1: 2.7,
-    curvature2: 0.4,
-    bumpiness: 5,
-    bumpNumber: 8,
-    color1: "#6495ED",
-    color2: "#00FFFF",
+  radialResolution: {
+    id: "radialResolutionSlider",
+    minValue: 45,
+    maxValue: 720,
   },
-  morningGlory: {
-    verticalResolution: 60,
-    radialResolution: 360,
-    petalNumber: 6,
-    petalLength: 80,
-    diameter: 130,
-    petalSharpness: 1.4,
-    height: 500,
-    curvature1: 0.5,
-    curvature2: 0.3,
-    bumpiness: 1.5,
-    bumpNumber: 12,
-    color1: "#4169E1",
-    color2: "#87CEEB",
-  },
-  lily: {
-    verticalResolution: 60,
-    radialResolution: 360,
-    petalNumber: 5,
-    petalLength: 140,
-    diameter: 20,
-    petalSharpness: 3,
-    height: 400,
-    curvature1: 0.6,
-    curvature2: 0.2,
-    bumpiness: 1.5,
-    bumpNumber: 12,
-    color1: "#8B008B",
-    color2: "#FFFF00",
-  },
-  buttercup: {
-    verticalResolution: 60,
-    radialResolution: 360,
-    petalNumber: 5,
-    petalLength: 160,
-    diameter: 40,
-    petalSharpness: 0.8,
-    height: 20,
-    curvature1: 2.9,
-    curvature2: 0.0,
-    bumpiness: 1.5,
-    bumpNumber: 8,
-    color1: "#FFD700",
-    color2: "#FF8C00",
-  },
+  petalNumber: { id: "petalNumberSlider", minValue: 1, maxValue: 20 },
+  diameter: { id: "diameterSlider", minValue: 20, maxValue: 250 },
+  petalLength: { id: "petalLengthSlider", minValue: 0, maxValue: 300 },
+  petalSharpness: { id: "petalSharpnessSlider", minValue: 0.0, maxValue: 10.0 },
+  height: { id: "heightSlider", minValue: 0, maxValue: 600 },
+  curvature1: { id: "curvature1Slider", minValue: 0.0, maxValue: 4.0 },
+  curvature2: { id: "curvature2Slider", minValue: 0.0, maxValue: 1.0 },
+  bumpiness: { id: "bumpinessSlider", minValue: 0.0, maxValue: 5.0 },
+  bumpNumber: { id: "bumpNumberSlider", minValue: 0, maxValue: 20 },
 };
 
-// Initialize sliders and color pickers
-const sliders = [
-  "verticalResolution",
-  "radialResolution",
-  "petalNumber",
-  "petalLength",
-  "diameter",
-  "petalSharpness",
-  "height",
-  "curvature1",
-  "curvature2",
-  "bumpiness",
-  "bumpNumber",
-];
-const colorPickers = ["flowerColourPicker", "flowerColourPicker2"];
+// Extract slider IDs and properties
+const sliders = Object.values(sliderInfo).map((info) => info.id);
+const sliderProperties = Object.keys(sliderInfo);
+
+const flowerColourPickers = ["flowerColourPicker", "flowerColourPicker2"];
+
+const buttonActions = {
+  resetCameraButton: resetCamera,
+  resetDefaultButton: () => location.reload(),
+  randomiseButton: randomiseParameters,
+  toggleAxesButton: toggleCartesianAxesVisibility,
+  toggleRadialAxesButton: toggleRadialAxesVisibility,
+  toggleControlsButton: toggleControls,
+  exportOBJButton: () => exportOBJ(mesh),
+  hibiscusButton: () => loadFlowerFromPreset("hibiscus"),
+  forgetMeNotButton: () => loadFlowerFromPreset("forgetMeNot"),
+  lilyButton: () => loadFlowerFromPreset("lily"),
+  morningGloryButton: () => loadFlowerFromPreset("morningGlory"),
+  buttercupButton: () => loadFlowerFromPreset("buttercup"),
+};
+const buttons = Object.keys(buttonActions);
 
 // Axes helpers
 const cartesianAxesHelper = new THREE.AxesHelper(300);
@@ -164,11 +99,6 @@ initEventListeners();
 
 // Animation
 animate();
-
-function initRadialAxesVisibility() {
-  radialAxesHelper.circle.visible = !radialAxesHelper.circle.visible;
-  radialAxesHelper.yAxis.visible = !radialAxesHelper.yAxis.visible;
-}
 
 function initControls() {
   const controls = new OrbitControls(camera, renderer.domElement);
@@ -198,12 +128,23 @@ function initRenderer() {
 function initEventListeners() {
   window.addEventListener("resize", onWindowResize);
   sliders.forEach((slider) => {
-    const sliderElement = document.getElementById(`${slider}Slider`);
+    const sliderElement = document.getElementById(`${slider}`);
     sliderElement.addEventListener("input", updateParameters);
   });
-  colorPickers.forEach((colorPicker) => {
+  flowerColourPickers.forEach((colorPicker) => {
     const colorPickerElement = document.getElementById(colorPicker);
     colorPickerElement.addEventListener("input", createVerticesAndTriangles);
+  });
+  const backgroundColorPicker = document.getElementById(
+    "backgroundColorPicker"
+  );
+  backgroundColorPicker.addEventListener("input", changeBackgroundColor);
+  document
+    .getElementById("displayModeDropdown")
+    .addEventListener("change", switchDisplayMode);
+  buttons.forEach((button) => {
+    const buttonElement = document.getElementById(`${button}`);
+    buttonElement.addEventListener("click", () => handleButtonClick(button));
   });
 }
 
@@ -308,7 +249,7 @@ function createVerticesAndTriangles() {
   const dropdown = document.getElementById("displayModeDropdown");
   const selectedValue = dropdown.value;
   if (selectedValue === "wireframe") {
-    addOrUpdateWireframeFromGeometry(geometry);
+    updateWireframeGeometry(geometry);
   }
 }
 
@@ -390,182 +331,108 @@ function randomiseParameters() {
     return checkbox.checked;
   }
 
-  // Get the checked status for each checkbox
-  const keepResolutionCheck = getCheckboxValue("keepResolutionCheckbox");
-  const flowerColour1Check = getCheckboxValue("flowerColour1Check");
-  const flowerColour2Check = getCheckboxValue("flowerColour2Check");
-  const verticalResolutionCheck = getCheckboxValue("verticalResolutionCheck");
-  const radialResolutionCheck = getCheckboxValue("radialResolutionCheck");
-  const petalNumberCheck = getCheckboxValue("petalNumberCheck");
-  const diameterCheck = getCheckboxValue("diameterCheck");
-  const petalLengthCheck = getCheckboxValue("petalLengthCheck");
-  const petalSharpnessCheck = getCheckboxValue("petalSharpnessCheck");
-  const heightCheck = getCheckboxValue("heightCheck");
-  const curvature1Check = getCheckboxValue("curvature1Check");
-  const curvature2Check = getCheckboxValue("curvature2Check");
-  const bumpinessCheck = getCheckboxValue("bumpinessCheck");
-  const bumpNumberCheck = getCheckboxValue("bumpNumberCheck");
+  // Helper function to randomize the value of a slider
+  function randomizeSliderValue(sliderId, minValue, maxValue) {
+    const slider = document.getElementById(sliderId);
+    slider.value = Math.random() * (maxValue - minValue + 1) + minValue;
+    slider.nextElementSibling.textContent = slider.value;
+  }
 
   // Randomize resolution only if "Keep Resolution" is not checked
+  const keepResolutionCheck = getCheckboxValue("keepResolutionCheckbox");
   if (!keepResolutionCheck) {
-    if (!verticalResolutionCheck) {
-      document.getElementById("verticalResolutionSlider").value = Math.floor(
-        Math.random() * (100 - 10 + 1) + 10
+    if (!getCheckboxValue("verticalResolutionCheck")) {
+      randomizeSliderValue(
+        "verticalResolutionSlider",
+        sliderInfo.verticalResolution.minValue,
+        sliderInfo.verticalResolution.maxValue
       );
     }
-    if (!radialResolutionCheck) {
-      document.getElementById("radialResolutionSlider").value = Math.floor(
-        Math.random() * (720 - 45 + 1) + 45
+    if (!getCheckboxValue("radialResolutionCheck")) {
+      randomizeSliderValue(
+        "radialResolutionSlider",
+        sliderInfo.radialResolution.minValue,
+        sliderInfo.radialResolution.maxValue
       );
     }
   }
-  if (!petalNumberCheck) {
-    document.getElementById("petalNumberSlider").value = Math.floor(
-      Math.random() * (20 - 1 + 1) + 1
-    );
-  }
-  if (!diameterCheck) {
-    document.getElementById("diameterSlider").value = Math.floor(
-      Math.random() * (250 - 20 + 1) + 20
-    );
-  }
-  if (!petalLengthCheck) {
-    document.getElementById("petalLengthSlider").value = Math.floor(
-      Math.random() * (300 - 0 + 1)
-    );
-  }
-  if (!petalSharpnessCheck) {
-    document.getElementById("petalSharpnessSlider").value =
-      Math.random() * (10.0 - 0.0) + 0.0;
-  }
-  if (!heightCheck) {
-    document.getElementById("heightSlider").value = Math.floor(
-      Math.random() * (600 - 0 + 1)
-    );
-  }
-  if (!curvature1Check) {
-    document.getElementById("curvature1Slider").value =
-      Math.random() * (4.0 - 0.0) + 0.0;
-  }
-  if (!curvature2Check) {
-    document.getElementById("curvature2Slider").value =
-      Math.random() * (1.0 - 0.0) + 0.0;
-  }
-  if (!bumpinessCheck) {
-    document.getElementById("bumpinessSlider").value =
-      Math.random() * (5.0 - 0.0) + 0.0;
-  }
-  if (!bumpNumberCheck) {
-    document.getElementById("bumpNumberSlider").value = Math.floor(
-      Math.random() * (20 - 0 + 1)
-    );
-  }
 
-  // Set the values of the output elements
-  document.getElementById(
-    "verticalResolutionSlider"
-  ).nextElementSibling.textContent = document.getElementById(
-    "verticalResolutionSlider"
-  ).value;
-  document.getElementById(
-    "radialResolutionSlider"
-  ).nextElementSibling.textContent = document.getElementById(
-    "radialResolutionSlider"
-  ).value;
-  document.getElementById("petalNumberSlider").nextElementSibling.textContent =
-    document.getElementById("petalNumberSlider").value;
-  document.getElementById("diameterSlider").nextElementSibling.textContent =
-    document.getElementById("diameterSlider").value;
-  document.getElementById("petalLengthSlider").nextElementSibling.textContent =
-    document.getElementById("petalLengthSlider").value;
-  document.getElementById(
-    "petalSharpnessSlider"
-  ).nextElementSibling.textContent = document.getElementById(
-    "petalSharpnessSlider"
-  ).value;
-  document.getElementById("heightSlider").nextElementSibling.textContent =
-    document.getElementById("heightSlider").value;
-  document.getElementById("curvature1Slider").nextElementSibling.textContent =
-    document.getElementById("curvature1Slider").value;
-  document.getElementById("curvature2Slider").nextElementSibling.textContent =
-    document.getElementById("curvature2Slider").value;
-  document.getElementById("bumpinessSlider").nextElementSibling.textContent =
-    document.getElementById("bumpinessSlider").value;
-  document.getElementById("bumpNumberSlider").nextElementSibling.textContent =
-    document.getElementById("bumpNumberSlider").value;
+  // Randomize other sliders
+  sliderProperties.forEach((property) => {
+    const checkboxId = `${property}Check`;
+    if (!getCheckboxValue(checkboxId)) {
+      randomizeSliderValue(
+        `${property}Slider`,
+        sliderInfo[property].minValue,
+        sliderInfo[property].maxValue
+      );
+    }
+  });
 
-  // Trigger the input event to update the visuals
+  // Trigger input events to update visuals
   updateParameters();
 
   // Randomize color values for the color pickers
+  const flowerColour1Check = getCheckboxValue("flowerColour1Check");
+  const flowerColour2Check = getCheckboxValue("flowerColour2Check");
+
   if (!flowerColour1Check) {
-    const randomColor1 = getRandomColor();
-    document.getElementById("flowerColourPicker").value = randomColor1;
-    document
-      .getElementById("flowerColourPicker")
-      .dispatchEvent(new Event("input"));
+    randomizeColorPicker("flowerColourPicker");
   }
 
   if (!flowerColour2Check) {
-    const randomColor2 = getRandomColor();
-    document.getElementById("flowerColourPicker2").value = randomColor2;
-    document
-      .getElementById("flowerColourPicker2")
-      .dispatchEvent(new Event("input"));
+    randomizeColorPicker("flowerColourPicker2");
   }
 }
 
-function getRandomColor() {
+// Helper function to randomize the value of a color picker
+function randomizeColorPicker(colorPickerId) {
+  const colorPicker = document.getElementById(colorPickerId);
+  const randomColor = getRandomColour();
+  colorPicker.value = randomColor;
+  colorPicker.dispatchEvent(new Event("input"));
+}
+
+function getRandomColour() {
   return "#" + Math.floor(Math.random() * 16777215).toString(16);
 }
 
 function loadFlowerFromPreset(presetName) {
   const preset = presets[presetName];
   if (preset) {
-    // Declare flowerColorPicker and flowerColorPicker2 variables
-    const flowerColorPicker = document.getElementById("flowerColourPicker");
-    const flowerColorPicker2 = document.getElementById("flowerColourPicker2");
-
-    // Set slider values
-    verticalResolutionSlider.value = preset.verticalResolution;
-    radialResolutionSlider.value = preset.radialResolution;
-    petalNumberSlider.value = preset.petalNumber;
-    petalLengthSlider.value = preset.petalLength;
-    diameterSlider.value = preset.diameter;
-    petalSharpnessSlider.value = preset.petalSharpness;
-    heightSlider.value = preset.height;
-    curvature1Slider.value = preset.curvature1;
-    curvature2Slider.value = preset.curvature2;
-    bumpinessSlider.value = preset.bumpiness;
-    bumpNumberSlider.value = preset.bumpNumber;
-
-    // Update input elements
-    verticalResolutionSlider.nextElementSibling.textContent =
-      verticalResolutionSlider.value;
-    radialResolutionSlider.nextElementSibling.textContent =
-      radialResolutionSlider.value;
-    petalNumberSlider.nextElementSibling.textContent = petalNumberSlider.value;
-    diameterSlider.nextElementSibling.textContent = diameterSlider.value;
-    petalLengthSlider.nextElementSibling.textContent = petalLengthSlider.value;
-    petalSharpnessSlider.nextElementSibling.textContent =
-      petalSharpnessSlider.value;
-    heightSlider.nextElementSibling.textContent = heightSlider.value;
-    curvature1Slider.nextElementSibling.textContent = curvature1Slider.value;
-    curvature2Slider.nextElementSibling.textContent = curvature2Slider.value;
-    bumpinessSlider.nextElementSibling.textContent = bumpinessSlider.value;
-    bumpNumberSlider.nextElementSibling.textContent = bumpNumberSlider.value;
-
-    // Set color picker values
-    flowerColorPicker.value = preset.color1;
-    flowerColorPicker2.value = preset.color2;
-
-    // Trigger input events to update visuals
-    updateParameters();
-    flowerColorPicker.dispatchEvent(new Event("input"));
-    flowerColorPicker2.dispatchEvent(new Event("input"));
+    updateSlidersAndInputs(preset);
+    updateColorPickers(preset);
+    triggerInputEvents();
   } else {
     console.error(`Preset '${presetName}' not found.`);
   }
+}
+
+function updateSlidersAndInputs(preset) {
+  sliderProperties.forEach((property) => {
+    const slider = document.getElementById(`${property}Slider`);
+    const inputValue = preset[property];
+    slider.value = inputValue;
+    slider.nextElementSibling.textContent = inputValue;
+  });
+}
+
+function updateColorPickers(preset) {
+  const flowerColorPicker = document.getElementById("flowerColourPicker");
+  const flowerColorPicker2 = document.getElementById("flowerColourPicker2");
+
+  flowerColorPicker.value = preset.color1;
+  flowerColorPicker2.value = preset.color2;
+}
+
+function triggerInputEvents() {
+  updateParameters();
+
+  const flowerColorPicker = document.getElementById("flowerColourPicker");
+  const flowerColorPicker2 = document.getElementById("flowerColourPicker2");
+
+  flowerColorPicker.dispatchEvent(new Event("input"));
+  flowerColorPicker2.dispatchEvent(new Event("input"));
 }
 
 function resetCamera() {
@@ -594,94 +461,14 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
-// Function to set up sliders and add event listeners
-function setupSliders() {
-  const sliders = [
-    "verticalResolutionSlider",
-    "radialResolutionSlider",
-    "petalNumberSlider",
-    "petalLengthSlider",
-    "diameterSlider",
-    "petalSharpnessSlider",
-    "heightSlider",
-    "curvature1Slider",
-    "curvature2Slider",
-    "bumpinessSlider",
-    "bumpNumberSlider",
-  ];
-
-  sliders.forEach((slider) => {
-    const sliderElement = document.getElementById(`${slider}`);
-    sliderElement.addEventListener("input", updateParameters);
-  });
-}
-
-// Function to set up color pickers and add event listeners
-function setupColorPickers() {
-  const colorPickers = ["flowerColourPicker", "flowerColourPicker2"];
-
-  colorPickers.forEach((colorPicker) => {
-    const colorPickerElement = document.getElementById(colorPicker);
-    colorPickerElement.addEventListener("input", createVerticesAndTriangles);
-  });
-
-  // Set up background color picker
-  const backgroundColorPicker = document.getElementById(
-    "backgroundColorPicker"
-  );
-  // Add event listener for the background color picker
-  backgroundColorPicker.addEventListener("input", changeBackgroundColor);
-}
-
 // Function to change the background color
 function changeBackgroundColor() {
   const color = backgroundColorPicker.value;
   renderer.setClearColor(new THREE.Color(color), 1);
 }
 
-// Function to set up buttons and add event listeners
-function setupButtons() {
-  const buttons = {
-    resetCameraButton,
-    resetDefaultButton,
-    randomiseButton,
-    toggleAxesButton,
-    toggleRadialAxesButton,
-    toggleControlsButton,
-    exportOBJButton,
-    hibiscusButton,
-    forgetMeNotButton,
-    lilyButton,
-    morningGloryButton,
-    buttercupButton,
-  };
-
-  Object.entries(buttons).forEach(([buttonId, buttonElement]) => {
-    if (buttonElement) {
-      buttonElement.addEventListener("click", () =>
-        handleButtonClick(buttonId)
-      );
-    }
-  });
-}
-
 // Function to handle button clicks
 function handleButtonClick(buttonId) {
-  const buttonActions = {
-    resetCameraButton: resetCamera,
-    resetDefaultButton: () => location.reload(),
-    randomiseButton: randomiseParameters,
-    toggleAxesButton: toggleCartesianAxesVisibility,
-    toggleRadialAxesButton: toggleRadialAxesVisibility,
-    toggleControlsButton: toggleControls,
-    exportOBJButton: exportOBJ,
-    hibiscusButton: () => loadFlowerFromPreset("hibiscus"),
-    forgetMeNotButton: () => loadFlowerFromPreset("forgetMeNot"),
-    lilyButton: () => loadFlowerFromPreset("lily"),
-    morningGloryButton: () => loadFlowerFromPreset("morningGlory"),
-    buttercupButton: () => loadFlowerFromPreset("buttercup"),
-  };
-
   const buttonAction = buttonActions[buttonId];
   if (buttonAction) {
     buttonAction();
@@ -690,7 +477,7 @@ function handleButtonClick(buttonId) {
   }
 }
 
-function addOrUpdateWireframeFromGeometry(geometry) {
+function updateWireframeGeometry(geometry) {
   // Remove the existing wireframe if there is one
   if (currentWireframe !== null) {
     scene.remove(currentWireframe);
@@ -710,14 +497,9 @@ function addOrUpdateWireframeFromGeometry(geometry) {
   currentWireframe = wireframe;
 }
 
-// Set up sliders, color pickers, and buttons
-setupSliders();
-setupColorPickers();
-setupButtons();
-
 // Initial setup
 toggleCartesianAxesVisibility();
-initRadialAxesVisibility();
+toggleRadialAxesVisibility();
 resetCamera();
 updateParameters();
 createVerticesAndTriangles();
@@ -762,10 +544,6 @@ function switchDisplayMode() {
   } else if (selectedValue === "wireframe") {
     mesh.visible = false;
     points.visible = false;
-    addOrUpdateWireframeFromGeometry(geometry);
+    updateWireframeGeometry(geometry);
   }
 }
-
-document
-  .getElementById("displayModeDropdown")
-  .addEventListener("change", switchDisplayMode);
