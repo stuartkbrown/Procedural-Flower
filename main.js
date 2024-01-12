@@ -3,6 +3,7 @@ import { exportOBJ } from "./export.js";
 import { presets } from "./presets.js";
 import { createVerticesAndTriangles } from "./geometry.js";
 import { initControls, initCamera, initRenderer } from "./initView.js";
+import { randomiseParameters } from "./randomise.js";
 
 // Parameters
 let numThetaSteps; // vertical resolution
@@ -58,7 +59,7 @@ const flowerColourPickers = ["flowerColourPicker", "flowerColourPicker2"];
 const buttonActions = {
   resetCameraButton: resetCamera,
   resetDefaultButton: () => location.reload(),
-  randomiseButton: randomiseParameters,
+  randomiseButton: randomiseAndUpdateParameters,
   toggleAxesButton: toggleCartesianAxesVisibility,
   toggleRadialAxesButton: toggleRadialAxesVisibility,
   toggleControlsButton: toggleControls,
@@ -202,78 +203,9 @@ function updateFlowerGeometry() {
   }
 }
 
-// Function to randomize parameters
-function randomiseParameters() {
-  // Helper function to get the checked status of a checkbox
-  function getCheckboxValue(checkboxId) {
-    const checkbox = document.getElementById(checkboxId);
-    return checkbox.checked;
-  }
-
-  // Helper function to randomize the value of a slider
-  function randomizeSliderValue(sliderId, minValue, maxValue) {
-    const slider = document.getElementById(sliderId);
-    slider.value = Math.random() * (maxValue - minValue + 1) + minValue;
-    slider.nextElementSibling.textContent = slider.value;
-  }
-
-  // Randomize resolution only if "Keep Resolution" is not checked
-  const keepResolutionCheck = getCheckboxValue("keepResolutionCheckbox");
-  if (!keepResolutionCheck) {
-    if (!getCheckboxValue("verticalResolutionCheck")) {
-      randomizeSliderValue(
-        "verticalResolutionSlider",
-        sliderInfo.verticalResolution.minValue,
-        sliderInfo.verticalResolution.maxValue
-      );
-    }
-    if (!getCheckboxValue("radialResolutionCheck")) {
-      randomizeSliderValue(
-        "radialResolutionSlider",
-        sliderInfo.radialResolution.minValue,
-        sliderInfo.radialResolution.maxValue
-      );
-    }
-  }
-
-  // Randomize other sliders
-  sliderProperties.forEach((property) => {
-    const checkboxId = `${property}Check`;
-    if (!getCheckboxValue(checkboxId)) {
-      randomizeSliderValue(
-        `${property}Slider`,
-        sliderInfo[property].minValue,
-        sliderInfo[property].maxValue
-      );
-    }
-  });
-
-  // Trigger input events to update visuals
+function randomiseAndUpdateParameters() {
+  randomiseParameters(sliderInfo, sliderProperties);
   updateParameters();
-
-  // Randomize color values for the color pickers
-  const flowerColour1Check = getCheckboxValue("flowerColour1Check");
-  const flowerColour2Check = getCheckboxValue("flowerColour2Check");
-
-  if (!flowerColour1Check) {
-    randomizeColorPicker("flowerColourPicker");
-  }
-
-  if (!flowerColour2Check) {
-    randomizeColorPicker("flowerColourPicker2");
-  }
-}
-
-// Helper function to randomize the value of a color picker
-function randomizeColorPicker(colorPickerId) {
-  const colorPicker = document.getElementById(colorPickerId);
-  const randomColor = getRandomColour();
-  colorPicker.value = randomColor;
-  colorPicker.dispatchEvent(new Event("input"));
-}
-
-function getRandomColour() {
-  return "#" + Math.floor(Math.random() * 16777215).toString(16);
 }
 
 function loadFlowerFromPreset(presetName) {
