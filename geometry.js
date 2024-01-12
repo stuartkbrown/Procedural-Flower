@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-function createVerticesAndTriangles(
+export function createVerticesAndTriangles(
   geometry,
   numThetaSteps,
   numPhiSteps,
@@ -179,5 +179,3 @@ function vShape(A, r, a, b) {
 function perturbation(A, r, p, angle) {
   return 1 + A * Math.pow(r, 2) * Math.sin(p * angle);
 }
-
-export { createVerticesAndTriangles };

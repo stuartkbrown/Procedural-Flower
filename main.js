@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { exportOBJ } from "./export.js";
 import { presets } from "./presets.js";
 import { createVerticesAndTriangles } from "./geometry.js";
+import { initControls, initCamera, initRenderer } from "./initView.js";
 
 // Parameters
 let numThetaSteps; // vertical resolution
@@ -82,44 +82,19 @@ const sizes = {
 };
 
 // Camera
-const camera = initCamera();
+const camera = initCamera(sizes);
 
 // Renderer
-const renderer = initRenderer();
+const renderer = initRenderer(sizes);
 
 // Controls
-const controls = initControls();
+const controls = initControls(camera, renderer);
 
 // Event listeners
 initEventListeners();
 
 // Animation
 loop();
-
-function initControls() {
-  const controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.08;
-  return controls;
-}
-
-function initCamera() {
-  const camera = new THREE.PerspectiveCamera(
-    75,
-    sizes.width / sizes.height,
-    0.1,
-    8000
-  );
-  camera.position.z = 550;
-  return camera;
-}
-
-function initRenderer() {
-  const canvas = document.querySelector(".webgl");
-  const renderer = new THREE.WebGLRenderer({ canvas });
-  renderer.setSize(sizes.width, sizes.height);
-  return renderer;
-}
 
 function initEventListeners() {
   window.addEventListener("resize", onWindowResize);
