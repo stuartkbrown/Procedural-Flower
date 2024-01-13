@@ -1,5 +1,5 @@
 // Preset configurations
-export const presets = {
+const presets = {
   hibiscus: {
     verticalResolution: 60,
     radialResolution: 360,
@@ -76,3 +76,33 @@ export const presets = {
     color2: "#FF8C00",
   },
 };
+
+export function loadFlowerFromPreset(presetName, sliderProperties) {
+  const preset = presets[presetName];
+  if (preset) {
+    updateSlidersFromPreset(preset, sliderProperties);
+    updateColorPickersFromPreset(preset);
+  } else {
+    console.error(`Preset '${presetName}' not found.`);
+  }
+}
+
+function updateSlidersFromPreset(preset, sliderProperties) {
+  sliderProperties.forEach((property) => {
+    const slider = document.getElementById(`${property}Slider`);
+    const inputValue = preset[property];
+    slider.value = inputValue;
+    slider.nextElementSibling.textContent = inputValue;
+  });
+}
+
+function updateColorPickersFromPreset(preset) {
+  const flowerColorPicker = document.getElementById("flowerColourPicker");
+  const flowerColorPicker2 = document.getElementById("flowerColourPicker2");
+
+  flowerColorPicker.value = preset.color1;
+  flowerColorPicker2.value = preset.color2;
+
+  flowerColorPicker.dispatchEvent(new Event("input"));
+  flowerColorPicker2.dispatchEvent(new Event("input"));
+}

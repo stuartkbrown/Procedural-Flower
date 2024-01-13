@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { exportOBJ } from "./export.js";
-import { presets } from "./presets.js";
+import { loadFlowerFromPreset } from "./presets.js";
 import { createVerticesAndTriangles } from "./geometry.js";
 import { initControls, initCamera, initRenderer } from "./initView.js";
 import { randomiseParameters } from "./randomise.js";
@@ -64,11 +64,11 @@ const buttonActions = {
   toggleRadialAxesButton: toggleRadialAxesVisibility,
   toggleControlsButton: toggleControls,
   exportOBJButton: () => exportOBJ(mesh),
-  hibiscusButton: () => loadFlowerFromPreset("hibiscus"),
-  forgetMeNotButton: () => loadFlowerFromPreset("forgetMeNot"),
-  lilyButton: () => loadFlowerFromPreset("lily"),
-  morningGloryButton: () => loadFlowerFromPreset("morningGlory"),
-  buttercupButton: () => loadFlowerFromPreset("buttercup"),
+  hibiscusButton: () => updateFlowerFromPreset("hibiscus"),
+  forgetMeNotButton: () => updateFlowerFromPreset("forgetMeNot"),
+  lilyButton: () => updateFlowerFromPreset("lily"),
+  morningGloryButton: () => updateFlowerFromPreset("morningGlory"),
+  buttercupButton: () => updateFlowerFromPreset("buttercup"),
 };
 const buttons = Object.keys(buttonActions);
 
@@ -208,41 +208,9 @@ function randomiseAndUpdateParameters() {
   updateParameters();
 }
 
-function loadFlowerFromPreset(presetName) {
-  const preset = presets[presetName];
-  if (preset) {
-    updateSlidersAndInputs(preset);
-    updateColorPickers(preset);
-    updateParameters();
-    triggerInputEvents();
-  } else {
-    console.error(`Preset '${presetName}' not found.`);
-  }
-}
-
-function updateSlidersAndInputs(preset) {
-  sliderProperties.forEach((property) => {
-    const slider = document.getElementById(`${property}Slider`);
-    const inputValue = preset[property];
-    slider.value = inputValue;
-    slider.nextElementSibling.textContent = inputValue;
-  });
-}
-
-function updateColorPickers(preset) {
-  const flowerColorPicker = document.getElementById("flowerColourPicker");
-  const flowerColorPicker2 = document.getElementById("flowerColourPicker2");
-
-  flowerColorPicker.value = preset.color1;
-  flowerColorPicker2.value = preset.color2;
-}
-
-function triggerInputEvents() {
-  const flowerColorPicker = document.getElementById("flowerColourPicker");
-  const flowerColorPicker2 = document.getElementById("flowerColourPicker2");
-
-  flowerColorPicker.dispatchEvent(new Event("input"));
-  flowerColorPicker2.dispatchEvent(new Event("input"));
+function updateFlowerFromPreset(presetName) {
+  loadFlowerFromPreset(presetName, sliderProperties);
+  updateParameters();
 }
 
 function resetCamera() {
