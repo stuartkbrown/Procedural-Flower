@@ -5,6 +5,7 @@ import { createVerticesAndTriangles } from "./geometry.js";
 import { randomiseParameters } from "./randomise.js";
 import { loadFlowerFromPreset } from "./presets.js";
 import { exportOBJ } from "./export.js";
+import { sliderInfo, sliders, sliderProperties } from "./sliders.js";
 
 // Parameters
 let numThetaSteps; // vertical resolution
@@ -25,55 +26,10 @@ const scene = new THREE.Scene();
 // Create Buffer Geometry
 const geometry = new THREE.BufferGeometry();
 
-// Create wireframe geometry
+// Create Wireframe Geometry
 let currentWireframe = null;
 
-// Initialize sliders and color pickers
-const sliderInfo = {
-  verticalResolution: {
-    id: "verticalResolutionSlider",
-    minValue: 10,
-    maxValue: 100,
-  },
-  radialResolution: {
-    id: "radialResolutionSlider",
-    minValue: 45,
-    maxValue: 720,
-  },
-  petalNumber: { id: "petalNumberSlider", minValue: 1, maxValue: 20 },
-  diameter: { id: "diameterSlider", minValue: 20, maxValue: 250 },
-  petalLength: { id: "petalLengthSlider", minValue: 0, maxValue: 300 },
-  petalSharpness: { id: "petalSharpnessSlider", minValue: 0.0, maxValue: 10.0 },
-  height: { id: "heightSlider", minValue: 0, maxValue: 600 },
-  curvature1: { id: "curvature1Slider", minValue: 0.0, maxValue: 4.0 },
-  curvature2: { id: "curvature2Slider", minValue: 0.0, maxValue: 1.0 },
-  bumpiness: { id: "bumpinessSlider", minValue: 0.0, maxValue: 5.0 },
-  bumpNumber: { id: "bumpNumberSlider", minValue: 0, maxValue: 20 },
-};
-
-// Extract slider IDs and properties
-const sliders = Object.values(sliderInfo).map((info) => info.id);
-const sliderProperties = Object.keys(sliderInfo);
-
-const flowerColourPickers = ["flowerColourPicker", "flowerColourPicker2"];
-
-const buttonActions = {
-  resetCameraButton: resetCamera,
-  resetDefaultButton: () => location.reload(),
-  randomiseButton: updateRandomisedParameters,
-  toggleAxesButton: toggleCartesianAxesVisibility,
-  toggleRadialAxesButton: toggleRadialAxesVisibility,
-  toggleUIButton: toggleUI,
-  exportOBJButton: () => exportOBJ(mesh),
-  hibiscusButton: () => updateFlowerFromPreset("hibiscus"),
-  forgetMeNotButton: () => updateFlowerFromPreset("forgetMeNot"),
-  lilyButton: () => updateFlowerFromPreset("lily"),
-  morningGloryButton: () => updateFlowerFromPreset("morningGlory"),
-  buttercupButton: () => updateFlowerFromPreset("buttercup"),
-};
-const buttons = Object.keys(buttonActions);
-
-// Axes helpers
+// Create Axes helpers
 const cartesianAxesHelper = new THREE.AxesHelper(300);
 const radialAxesHelper = createRadialAxesHelper(300, 64);
 
@@ -92,12 +48,61 @@ const renderer = initRenderer(sizes);
 // Controls
 const controls = initControls(camera, renderer);
 
-// Event listeners
-initEventListeners();
-
 // Animation
 loop();
 
+// Initial setup
+toggleCartesianAxesVisibility();
+toggleRadialAxesVisibility();
+resetCamera();
+updateParameters();
+updateFlowerGeometry();
+
+// Create materials
+const material = new THREE.MeshBasicMaterial({
+  vertexColors: true,
+  side: THREE.DoubleSide,
+});
+const pointsMaterial = new THREE.PointsMaterial({
+  size: 1,
+  vertexColors: true,
+});
+
+// Create meshes with BufferGeometry and materials
+const mesh = new THREE.Mesh(geometry, material);
+const points = new THREE.Points(geometry, pointsMaterial);
+points.visible = false;
+
+// Add to the scene
+scene.add(mesh);
+scene.add(points);
+scene.add(cartesianAxesHelper);
+scene.add(radialAxesHelper.circle);
+scene.add(radialAxesHelper.yAxis);
+
+// UI Elements
+const flowerColourPickers = ["flowerColourPicker", "flowerColourPicker2"];
+
+const buttonActions = {
+  resetCameraButton: resetCamera,
+  resetDefaultButton: () => location.reload(),
+  randomiseButton: updateRandomisedParameters,
+  toggleAxesButton: toggleCartesianAxesVisibility,
+  toggleRadialAxesButton: toggleRadialAxesVisibility,
+  toggleUIButton: toggleUI,
+  exportOBJButton: () => exportOBJ(mesh),
+  hibiscusButton: () => updateFlowerFromPreset("hibiscus"),
+  forgetMeNotButton: () => updateFlowerFromPreset("forgetMeNot"),
+  lilyButton: () => updateFlowerFromPreset("lily"),
+  morningGloryButton: () => updateFlowerFromPreset("morningGlory"),
+  buttercupButton: () => updateFlowerFromPreset("buttercup"),
+};
+const buttons = Object.keys(buttonActions);
+
+// Event listeners
+initEventListeners();
+
+// Functions
 function initEventListeners() {
   window.addEventListener("resize", onWindowResize);
 
@@ -123,6 +128,40 @@ function initEventListeners() {
     const buttonElement = document.getElementById(`${button}`);
     buttonElement.addEventListener("click", () => handleButtonClick(button));
   });
+}
+
+// Function to handle button clicks
+function handleButtonClick(buttonId) {
+  const buttonAction = buttonActions[buttonId];
+  if (buttonAction) {
+    buttonAction();
+  } else {
+    console.error(`Action for button '${buttonId}' not defined.`);
+  }
+}
+
+// Function to switch between display modes
+function switchDisplayMode() {
+  const selectedValue = getDropdownValue();
+
+  // Toggle visibility of mesh and points
+  if (selectedValue === "triangles") {
+    mesh.visible = true;
+    points.visible = false;
+    if (currentWireframe != null) {
+      currentWireframe.visible = false;
+    }
+  } else if (selectedValue === "points") {
+    mesh.visible = false;
+    points.visible = true;
+    if (currentWireframe != null) {
+      currentWireframe.visible = false;
+    }
+  } else if (selectedValue === "wireframe") {
+    mesh.visible = false;
+    points.visible = false;
+    updateWireframeGeometry(geometry);
+  }
 }
 
 function getDropdownValue() {
@@ -176,6 +215,26 @@ function updateFlowerGeometry() {
   }
 }
 
+function updateWireframeGeometry(geometry) {
+  // Remove the existing wireframe if there is one
+  if (currentWireframe !== null) {
+    scene.remove(currentWireframe);
+  }
+
+  // Create a new wireframe
+  const wireframeGeometry = new THREE.WireframeGeometry(geometry);
+  const wireframe = new THREE.LineSegments(wireframeGeometry);
+  wireframe.material.depthTest = false;
+  wireframe.material.opacity = 0.25;
+  wireframe.material.transparent = true;
+
+  // Add the new wireframe to the scene
+  scene.add(wireframe);
+
+  // Update the currentWireframe variable
+  currentWireframe = wireframe;
+}
+
 function updateRandomisedParameters() {
   randomiseParameters(sliderInfo, sliderProperties, flowerColourPickers);
   updateParameters();
@@ -206,95 +265,14 @@ function toggleUI() {
   controlsContainer.classList.toggle("hidden");
 }
 
-function loop() {
-  controls.update();
-  renderer.render(scene, camera);
-  requestAnimationFrame(loop);
-}
-
 // Function to change the background color
 function changeBackgroundColor() {
   const color = backgroundColorPicker.value;
   renderer.setClearColor(new THREE.Color(color), 1);
 }
 
-// Function to handle button clicks
-function handleButtonClick(buttonId) {
-  const buttonAction = buttonActions[buttonId];
-  if (buttonAction) {
-    buttonAction();
-  } else {
-    console.error(`Action for button '${buttonId}' not defined.`);
-  }
-}
-
-function updateWireframeGeometry(geometry) {
-  // Remove the existing wireframe if there is one
-  if (currentWireframe !== null) {
-    scene.remove(currentWireframe);
-  }
-
-  // Create a new wireframe
-  const wireframeGeometry = new THREE.WireframeGeometry(geometry);
-  const wireframe = new THREE.LineSegments(wireframeGeometry);
-  wireframe.material.depthTest = false;
-  wireframe.material.opacity = 0.25;
-  wireframe.material.transparent = true;
-
-  // Add the new wireframe to the scene
-  scene.add(wireframe);
-
-  // Update the currentWireframe variable
-  currentWireframe = wireframe;
-}
-
-// Initial setup
-toggleCartesianAxesVisibility();
-toggleRadialAxesVisibility();
-resetCamera();
-updateParameters();
-updateFlowerGeometry();
-
-// Create material
-const material = new THREE.MeshBasicMaterial({
-  vertexColors: true,
-  side: THREE.DoubleSide,
-});
-const pointsMaterial = new THREE.PointsMaterial({
-  size: 1,
-  vertexColors: true,
-});
-
-// Create mesh with BufferGeometry and material
-const mesh = new THREE.Mesh(geometry, material);
-const points = new THREE.Points(geometry, pointsMaterial);
-scene.add(mesh);
-scene.add(points);
-points.visible = false;
-scene.add(cartesianAxesHelper);
-scene.add(radialAxesHelper.circle);
-scene.add(radialAxesHelper.yAxis);
-
-// Function to switch between display modes
-function switchDisplayMode() {
-  const selectedValue = getDropdownValue();
-
-  // Toggle visibility of mesh and points
-  if (selectedValue === "triangles") {
-    mesh.visible = true;
-    points.visible = false;
-    if (currentWireframe != null) {
-      currentWireframe.visible = false;
-    }
-  } else if (selectedValue === "points") {
-    mesh.visible = false;
-    points.visible = true;
-    if (currentWireframe != null) {
-      currentWireframe.visible = false;
-    }
-  } else if (selectedValue === "wireframe") {
-    mesh.visible = false;
-    points.visible = false;
-    updateWireframeGeometry(geometry);
-  }
+function loop() {
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(loop);
 }
