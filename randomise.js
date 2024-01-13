@@ -1,5 +1,9 @@
 // Function to randomise parameters
-export function randomiseParameters(sliderInfo, sliderProperties) {
+export function randomiseParameters(
+  sliderInfo,
+  sliderProperties,
+  flowerColourPickers
+) {
   // Randomise resolution only if "Keep Resolution" is not checked
   const keepResolutionCheck = getCheckboxValue("keepResolutionCheckbox");
   if (!keepResolutionCheck) {
@@ -31,17 +35,12 @@ export function randomiseParameters(sliderInfo, sliderProperties) {
     }
   });
 
-  // Randomise colour values for the colour pickers
-  const flowerColour1Check = getCheckboxValue("flowerColour1Check");
-  const flowerColour2Check = getCheckboxValue("flowerColour2Check");
-
-  if (!flowerColour1Check) {
-    randomiseColourPicker("flowerColourPicker");
-  }
-
-  if (!flowerColour2Check) {
-    randomiseColourPicker("flowerColourPicker2");
-  }
+  flowerColourPickers.forEach((colourPicker) => {
+    const checkboxId = `${colourPicker}Check`;
+    if (!getCheckboxValue(checkboxId)) {
+      randomiseColourPicker(colourPicker);
+    }
+  });
 }
 
 // Helper function to randomise the value of a colour picker

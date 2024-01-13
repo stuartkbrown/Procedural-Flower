@@ -50,7 +50,7 @@ nav ul {
   transform: translate(-2.5%, -2.5%);
 }
 
-#toggleControlsButton {
+#toggleUIButton {
   background-color: rgba(255, 255, 255, 0.1);
   z-index: 2;
   position: absolute;
@@ -59,7 +59,7 @@ nav ul {
   transform: translate(2.5%, -2.5%);
 }
 
-#toggleControlsButton:hover {
+#toggleUIButton:hover {
   background-color: rgba(255, 255, 255, 0.3);
 }
 

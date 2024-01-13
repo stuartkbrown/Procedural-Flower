@@ -1,9 +1,10 @@
 import * as THREE from "three";
-import { exportOBJ } from "./export.js";
-import { loadFlowerFromPreset } from "./presets.js";
-import { createVerticesAndTriangles } from "./geometry.js";
 import { initControls, initCamera, initRenderer } from "./initView.js";
+import { createRadialAxesHelper } from "./radialAxesHelper.js";
+import { createVerticesAndTriangles } from "./geometry.js";
 import { randomiseParameters } from "./randomise.js";
+import { loadFlowerFromPreset } from "./presets.js";
+import { exportOBJ } from "./export.js";
 
 // Parameters
 let numThetaSteps; // vertical resolution
@@ -59,10 +60,10 @@ const flowerColourPickers = ["flowerColourPicker", "flowerColourPicker2"];
 const buttonActions = {
   resetCameraButton: resetCamera,
   resetDefaultButton: () => location.reload(),
-  randomiseButton: randomiseAndUpdateParameters,
+  randomiseButton: updateRandomisedParameters,
   toggleAxesButton: toggleCartesianAxesVisibility,
   toggleRadialAxesButton: toggleRadialAxesVisibility,
-  toggleControlsButton: toggleControls,
+  toggleUIButton: toggleUI,
   exportOBJButton: () => exportOBJ(mesh),
   hibiscusButton: () => updateFlowerFromPreset("hibiscus"),
   forgetMeNotButton: () => updateFlowerFromPreset("forgetMeNot"),
@@ -124,44 +125,17 @@ function initEventListeners() {
   });
 }
 
+function getDropdownValue() {
+  const dropdown = document.getElementById("displayModeDropdown");
+  return dropdown.value;
+}
+
 function onWindowResize() {
   sizes.width = window.innerWidth;
   sizes.height = window.innerHeight;
   camera.aspect = sizes.width / sizes.height;
   camera.updateProjectionMatrix();
   renderer.setSize(sizes.width, sizes.height);
-}
-
-function createRadialAxesHelper(size, segments) {
-  const diameter = size * 2;
-  const points = [];
-
-  // Generate points for the circle
-  for (let i = 0; i <= segments; i++) {
-    const theta = (i / segments) * Math.PI * 2;
-    const x = (Math.cos(theta) * diameter) / 2;
-    const z = (Math.sin(theta) * diameter) / 2;
-    points.push(new THREE.Vector3(x, 0, z));
-  }
-
-  // Create the circle on the XZ plane
-  const circleGeometry = new THREE.BufferGeometry().setFromPoints(points);
-  const circleMaterial = new THREE.LineBasicMaterial({ color: 0xffa500 });
-  const circle = new THREE.Line(circleGeometry, circleMaterial);
-  circle.rotation.x = Math.PI / 2; // Rotate to be on the XZ plane
-  scene.add(circle);
-
-  // Create the Y-axis with length 300
-  const yAxisMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
-  const yAxisGeometry = new THREE.BufferGeometry().setFromPoints([
-    new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(0, 0, size),
-  ]);
-  const yAxis = new THREE.Line(yAxisGeometry, yAxisMaterial);
-  scene.add(yAxis);
-
-  // Return the helper objects so that we can toggle their visibility
-  return { circle, yAxis };
 }
 
 function updateParameters() {
@@ -196,20 +170,19 @@ function updateFlowerGeometry() {
     bumpiness,
     bumpNumber
   );
-  const dropdown = document.getElementById("displayModeDropdown");
-  const selectedValue = dropdown.value;
+  const selectedValue = getDropdownValue();
   if (selectedValue === "wireframe") {
     updateWireframeGeometry(geometry);
   }
 }
 
-function randomiseAndUpdateParameters() {
-  randomiseParameters(sliderInfo, sliderProperties);
+function updateRandomisedParameters() {
+  randomiseParameters(sliderInfo, sliderProperties, flowerColourPickers);
   updateParameters();
 }
 
 function updateFlowerFromPreset(presetName) {
-  loadFlowerFromPreset(presetName, sliderProperties);
+  loadFlowerFromPreset(presetName, sliderProperties, flowerColourPickers);
   updateParameters();
 }
 
@@ -228,7 +201,7 @@ function toggleRadialAxesVisibility() {
   radialAxesHelper.yAxis.visible = !radialAxesHelper.yAxis.visible;
 }
 
-function toggleControls() {
+function toggleUI() {
   const controlsContainer = document.querySelector(".container");
   controlsContainer.classList.toggle("hidden");
 }
@@ -299,11 +272,12 @@ scene.add(mesh);
 scene.add(points);
 points.visible = false;
 scene.add(cartesianAxesHelper);
+scene.add(radialAxesHelper.circle);
+scene.add(radialAxesHelper.yAxis);
 
 // Function to switch between display modes
 function switchDisplayMode() {
-  const dropdown = document.getElementById("displayModeDropdown");
-  const selectedValue = dropdown.value;
+  const selectedValue = getDropdownValue();
 
   // Toggle visibility of mesh and points
   if (selectedValue === "triangles") {

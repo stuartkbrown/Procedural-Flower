@@ -77,11 +77,15 @@ const presets = {
   },
 };
 
-export function loadFlowerFromPreset(presetName, sliderProperties) {
+export function loadFlowerFromPreset(
+  presetName,
+  sliderProperties,
+  flowerColourPickers
+) {
   const preset = presets[presetName];
   if (preset) {
     updateSlidersFromPreset(preset, sliderProperties);
-    updateColorPickersFromPreset(preset);
+    updateColourPickersFromPreset(preset, flowerColourPickers);
   } else {
     console.error(`Preset '${presetName}' not found.`);
   }
@@ -96,13 +100,11 @@ function updateSlidersFromPreset(preset, sliderProperties) {
   });
 }
 
-function updateColorPickersFromPreset(preset) {
-  const flowerColorPicker = document.getElementById("flowerColourPicker");
-  const flowerColorPicker2 = document.getElementById("flowerColourPicker2");
-
-  flowerColorPicker.value = preset.color1;
-  flowerColorPicker2.value = preset.color2;
-
-  flowerColorPicker.dispatchEvent(new Event("input"));
-  flowerColorPicker2.dispatchEvent(new Event("input"));
+function updateColourPickersFromPreset(preset, flowerColourPickers) {
+  flowerColourPickers.forEach((colourPicker, index) => {
+    const colourPickerElement = document.getElementById(colourPicker);
+    const presetColor = index === 0 ? preset.color1 : preset.color2;
+    colourPickerElement.value = presetColor;
+    colourPickerElement.dispatchEvent(new Event("input"));
+  });
 }
