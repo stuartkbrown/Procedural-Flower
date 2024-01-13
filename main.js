@@ -3,8 +3,8 @@ import { initControls, initCamera, initRenderer } from "./initView.js";
 import { createRadialAxesHelper } from "./radialAxesHelper.js";
 import { createVerticesAndTriangles } from "./geometry.js";
 import { randomiseParameters } from "./randomise.js";
-import { loadFlowerFromPreset } from "./presets.js";
-import { exportOBJ } from "./export.js";
+import { loadFlowerFromPreset, loadFlowerFromJSON } from "./presets.js";
+import { exportOBJ, exportJSON } from "./export.js";
 import { sliderInfo, sliders, sliderProperties } from "./sliders.js";
 
 // Parameters
@@ -91,6 +91,28 @@ const buttonActions = {
   toggleRadialAxesButton: toggleRadialAxesVisibility,
   toggleUIButton: toggleUI,
   exportOBJButton: () => exportOBJ(mesh),
+  importJSONButton: () => {
+    document.getElementById("fileInput").click();
+  },
+  exportJSONButton: () => {
+    const color1 = document.getElementById("flowerColourPicker").value;
+    const color2 = document.getElementById("flowerColourPicker2").value;
+    exportJSON(
+      numThetaSteps,
+      numPhiSteps,
+      petalNumber,
+      petalLength,
+      diameter,
+      petalSharpness,
+      height,
+      curvature1,
+      curvature2,
+      bumpiness,
+      bumpNumber,
+      color1,
+      color2
+    );
+  },
   hibiscusButton: () => updateFlowerFromPreset("hibiscus"),
   forgetMeNotButton: () => updateFlowerFromPreset("forgetMeNot"),
   lilyButton: () => updateFlowerFromPreset("lily"),
@@ -124,6 +146,10 @@ function initEventListeners() {
     .getElementById("displayModeDropdown")
     .addEventListener("change", switchDisplayMode);
 
+  document
+    .getElementById("fileInput")
+    .addEventListener("change", handleFileSelect);
+
   buttons.forEach((button) => {
     const buttonElement = document.getElementById(`${button}`);
     buttonElement.addEventListener("click", () => handleButtonClick(button));
@@ -137,6 +163,24 @@ function handleButtonClick(buttonId) {
     buttonAction();
   } else {
     console.error(`Action for button '${buttonId}' not defined.`);
+  }
+}
+
+function handleFileSelect(event) {
+  const fileInput = event.target;
+  const file = fileInput.files[0];
+
+  if (file) {
+    // Read the contents of the selected file
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      const jsonData = e.target.result;
+      // Call the function to load flower from JSON
+      updateFlowerFromJSON(jsonData, sliderProperties, flowerColourPickers);
+    };
+
+    reader.readAsText(file);
   }
 }
 
@@ -242,6 +286,11 @@ function updateRandomisedParameters() {
 
 function updateFlowerFromPreset(presetName) {
   loadFlowerFromPreset(presetName, sliderProperties, flowerColourPickers);
+  updateParameters();
+}
+
+function updateFlowerFromJSON(jsonData) {
+  loadFlowerFromJSON(jsonData, sliderProperties, flowerColourPickers);
   updateParameters();
 }
 

@@ -91,6 +91,28 @@ export function loadFlowerFromPreset(
   }
 }
 
+export function loadFlowerFromJSON(
+  jsonData,
+  sliderProperties,
+  flowerColourPickers
+) {
+  // Parse the JSON data
+  const parsedData = JSON.parse(jsonData);
+
+  // Extract the flower data from the parsed JSON
+  const flowerData = parsedData.proceduralFlower;
+
+  // Check if the required properties are present
+  if (!flowerData) {
+    console.error("Invalid JSON format. Missing 'proceduralFlower' property.");
+    return;
+  }
+
+  // Update UI elements with the values from the JSON
+  updateSlidersFromPreset(flowerData, sliderProperties);
+  updateColourPickersFromPreset(flowerData, flowerColourPickers);
+}
+
 function updateSlidersFromPreset(preset, sliderProperties) {
   sliderProperties.forEach((property) => {
     const slider = document.getElementById(`${property}Slider`);
