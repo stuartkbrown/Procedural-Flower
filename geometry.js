@@ -1,34 +1,8 @@
 import * as THREE from "three";
 
-export function createVerticesAndTriangles(
-  geometry,
-  numThetaSteps,
-  numPhiSteps,
-  petalNumber,
-  petalLength,
-  diameter,
-  petalSharpness,
-  height,
-  curvature1,
-  curvature2,
-  bumpiness,
-  bumpNumber
-) {
-  createVertices(
-    geometry,
-    numThetaSteps,
-    numPhiSteps,
-    petalNumber,
-    petalLength,
-    diameter,
-    petalSharpness,
-    height,
-    curvature1,
-    curvature2,
-    bumpiness,
-    bumpNumber
-  );
-  createTriangles(geometry, numThetaSteps, numPhiSteps);
+export function createVerticesAndTriangles(geometry, parameters) {
+  createVertices(geometry, parameters);
+  createTriangles(geometry, parameters.numThetaSteps, parameters.numPhiSteps);
   geometry.computeVertexNormals();
 }
 
@@ -70,20 +44,7 @@ function createTriangles(geometry, numThetaSteps, numPhiSteps) {
   geometry.setIndex(indices);
 }
 
-function createVertices(
-  geometry,
-  numThetaSteps,
-  numPhiSteps,
-  petalNumber,
-  petalLength,
-  diameter,
-  petalSharpness,
-  height,
-  curvature1,
-  curvature2,
-  bumpiness,
-  bumpNumber
-) {
+function createVertices(geometry, parameters) {
   let positions = [];
   let colors = [];
 
@@ -94,27 +55,13 @@ function createVertices(
   const flowerColorPicker2 = document.getElementById("flowerColourPicker2");
   const color2 = new THREE.Color(flowerColorPicker2.value);
 
-  for (let theta = 0; theta < numThetaSteps; theta += 1) {
-    for (let phi = 0; phi < numPhiSteps; phi += 1) {
-      const vertex = calculateVertex(
-        theta,
-        phi,
-        numThetaSteps,
-        numPhiSteps,
-        petalNumber,
-        petalLength,
-        diameter,
-        petalSharpness,
-        height,
-        curvature1,
-        curvature2,
-        bumpiness,
-        bumpNumber
-      );
+  for (let theta = 0; theta < parameters.numThetaSteps; theta += 1) {
+    for (let phi = 0; phi < parameters.numPhiSteps; phi += 1) {
+      const vertex = calculateVertex(theta, phi, parameters);
       positions.push(vertex.x, vertex.y, vertex.z);
 
       // Adjust the interpolation parameter based on the loop indices
-      const t = theta / numThetaSteps; // Normalize phi to [0, 1]
+      const t = theta / parameters.numThetaSteps; // Normalize phi to [0, 1]
       const lerpedColor = color1.clone().lerp(color2, t);
       colors.push(lerpedColor.r, lerpedColor.g, lerpedColor.b);
     }
@@ -129,40 +76,36 @@ function createVertices(
 }
 
 // Function to calculate vertex position based on parameters
-function calculateVertex(
-  theta,
-  phi,
-  numThetaSteps,
-  numPhiSteps,
-  petalNumber,
-  petalLength,
-  diameter,
-  petalSharpness,
-  height,
-  curvature1,
-  curvature2,
-  bumpiness,
-  bumpNumber
-) {
-  const normalizedPhi = (phi / numPhiSteps) * 2 * Math.PI;
+function calculateVertex(theta, phi, parameters) {
+  const normalizedPhi = (phi / parameters.numPhiSteps) * 2 * Math.PI;
   const r =
-    (((petalLength *
+    (((parameters.petalLength *
       Math.pow(
-        Math.abs(Math.sin((normalizedPhi * petalNumber) / 2)),
-        petalSharpness
+        Math.abs(Math.sin((normalizedPhi * parameters.petalNumber) / 2)),
+        parameters.petalSharpness
       ) +
-      diameter) *
+      parameters.diameter) *
       theta) /
-      numThetaSteps /
+      parameters.numThetaSteps /
       60) *
     60;
   const x = r * Math.cos(normalizedPhi);
   const y = r * Math.sin(normalizedPhi);
 
   const z =
-    vShape(height, r / 100, curvature1, curvature2) -
+    vShape(
+      parameters.height,
+      r / 100,
+      parameters.curvature1,
+      parameters.curvature2
+    ) -
     200 +
-    perturbation(bumpiness, r / 100, bumpNumber, normalizedPhi);
+    perturbation(
+      parameters.bumpiness,
+      r / 100,
+      parameters.bumpNumber,
+      normalizedPhi
+    );
 
   return new THREE.Vector3(x, y, z);
 }

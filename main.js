@@ -8,17 +8,19 @@ import { exportOBJ, exportJSON } from "./export.js";
 import { sliderInfo, sliders, sliderProperties } from "./sliders.js";
 
 // Parameters
-let numThetaSteps; // vertical resolution
-let numPhiSteps; // radial resolution
-let petalNumber;
-let petalLength;
-let diameter;
-let petalSharpness;
-let height;
-let curvature1;
-let curvature2;
-let bumpiness;
-let bumpNumber;
+let parameters = {
+  numThetaSteps: 0,
+  numPhiSteps: 0,
+  petalNumber: 0,
+  petalLength: 0,
+  diameter: 0,
+  petalSharpness: 0,
+  height: 0,
+  curvature1: 0,
+  curvature2: 0,
+  bumpiness: 0,
+  bumpNumber: 0,
+};
 
 // Scene
 const scene = new THREE.Scene();
@@ -97,21 +99,7 @@ const buttonActions = {
   exportJSONButton: () => {
     const color1 = document.getElementById("flowerColourPicker").value;
     const color2 = document.getElementById("flowerColourPicker2").value;
-    exportJSON(
-      numThetaSteps,
-      numPhiSteps,
-      petalNumber,
-      petalLength,
-      diameter,
-      petalSharpness,
-      height,
-      curvature1,
-      curvature2,
-      bumpiness,
-      bumpNumber,
-      color1,
-      color2
-    );
+    exportJSON(parameters, color1, color2);
   },
   hibiscusButton: () => updateFlowerFromPreset("hibiscus"),
   forgetMeNotButton: () => updateFlowerFromPreset("forgetMeNot"),
@@ -222,37 +210,24 @@ function onWindowResize() {
 }
 
 function updateParameters() {
-  numThetaSteps = parseFloat(verticalResolutionSlider.value);
-  numPhiSteps = parseFloat(radialResolutionSlider.value);
+  parameters.numThetaSteps = parseFloat(verticalResolutionSlider.value);
+  parameters.numPhiSteps = parseFloat(radialResolutionSlider.value);
 
-  petalNumber = parseFloat(petalNumberSlider.value);
-  petalLength = parseFloat(petalLengthSlider.value);
-  diameter = parseFloat(diameterSlider.value);
-  petalSharpness = parseFloat(petalSharpnessSlider.value);
-  height = parseFloat(heightSlider.value);
-  curvature1 = parseFloat(curvature1Slider.value);
-  curvature2 = parseFloat(curvature2Slider.value);
-  bumpiness = parseFloat(bumpinessSlider.value);
-  bumpNumber = parseFloat(bumpNumberSlider.value);
+  parameters.petalNumber = parseFloat(petalNumberSlider.value);
+  parameters.petalLength = parseFloat(petalLengthSlider.value);
+  parameters.diameter = parseFloat(diameterSlider.value);
+  parameters.petalSharpness = parseFloat(petalSharpnessSlider.value);
+  parameters.height = parseFloat(heightSlider.value);
+  parameters.curvature1 = parseFloat(curvature1Slider.value);
+  parameters.curvature2 = parseFloat(curvature2Slider.value);
+  parameters.bumpiness = parseFloat(bumpinessSlider.value);
+  parameters.bumpNumber = parseFloat(bumpNumberSlider.value);
 
   updateFlowerGeometry(); // Recreate vertices based on updated parameters
 }
 
 function updateFlowerGeometry() {
-  createVerticesAndTriangles(
-    geometry,
-    numThetaSteps,
-    numPhiSteps,
-    petalNumber,
-    petalLength,
-    diameter,
-    petalSharpness,
-    height,
-    curvature1,
-    curvature2,
-    bumpiness,
-    bumpNumber
-  );
+  createVerticesAndTriangles(geometry, parameters);
   const selectedValue = getDropdownValue();
   if (selectedValue === "wireframe") {
     updateWireframeGeometry(geometry);

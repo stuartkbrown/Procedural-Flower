@@ -97,20 +97,36 @@ export function loadFlowerFromJSON(
   flowerColourPickers
 ) {
   // Parse the JSON data
-  const parsedData = JSON.parse(jsonData);
+  const flowerData = JSON.parse(jsonData, (key, value) => {
+    if (typeof key === "string" && key.startsWith('"') && key.endsWith('"')) {
+      // Remove double quotes from property names
+      key = key.slice(1, -1);
+    }
 
-  // Extract the flower data from the parsed JSON
-  const flowerData = parsedData.proceduralFlower;
+    if (
+      typeof value === "string" &&
+      value.startsWith('"') &&
+      value.endsWith('"')
+    ) {
+      // Remove double quotes from string property values
+      value = value.slice(1, -1);
+    }
+
+    return value;
+  });
 
   // Check if the required properties are present
-  if (!flowerData) {
+  if (!flowerData || !flowerData.proceduralFlower) {
     console.error("Invalid JSON format. Missing 'proceduralFlower' property.");
     return;
   }
 
   // Update UI elements with the values from the JSON
-  updateSlidersFromPreset(flowerData, sliderProperties);
-  updateColourPickersFromPreset(flowerData, flowerColourPickers);
+  updateSlidersFromPreset(flowerData.proceduralFlower, sliderProperties);
+  updateColourPickersFromPreset(
+    flowerData.proceduralFlower,
+    flowerColourPickers
+  );
 }
 
 function updateSlidersFromPreset(preset, sliderProperties) {

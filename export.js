@@ -14,37 +14,27 @@ function saveString(text, filename) {
   link.click();
 }
 
-export function exportJSON(
-  numThetaSteps,
-  numPhiSteps,
-  petalNumber,
-  petalLength,
-  diameter,
-  petalSharpness,
-  height,
-  curvature1,
-  curvature2,
-  bumpiness,
-  bumpNumber,
-  color1,
-  color2
-) {
-  // Create the JSON string manually
-  const jsonString = `proceduralFlower: {
-    verticalResolution: ${numThetaSteps},
-    radialResolution: ${numPhiSteps},
-    petalNumber: ${petalNumber},
-    petalLength: ${petalLength},
-    diameter: ${diameter},
-    petalSharpness: ${petalSharpness},
-    height: ${height},
-    curvature1: ${curvature1},
-    curvature2: ${curvature2},
-    bumpiness: ${bumpiness},
-    bumpNumber: ${bumpNumber},
-    color1: "${color1}",
-    color2: "${color2}",
-  }`;
+export function exportJSON(parameters, color1, color2) {
+  // Create the JSON string
+  const data = {
+    proceduralFlower: {
+      verticalResolution: parameters.numThetaSteps,
+      radialResolution: parameters.numPhiSteps,
+      petalNumber: parameters.petalNumber,
+      petalLength: parameters.petalLength,
+      diameter: parameters.diameter,
+      petalSharpness: parameters.petalSharpness,
+      height: parameters.height,
+      curvature1: parameters.curvature1,
+      curvature2: parameters.curvature2,
+      bumpiness: parameters.bumpiness,
+      bumpNumber: parameters.bumpNumber,
+      color1: color1,
+      color2: color2,
+    },
+  };
+
+  const jsonString = JSON.stringify(data, null, 2);
 
   // Create a Blob from the JSON string
   const blob = new Blob([jsonString], { type: "application/json" });
