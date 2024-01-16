@@ -50,9 +50,6 @@ const renderer = initRenderer(sizes);
 // Controls
 const controls = initControls(camera, renderer);
 
-// Animation
-loop();
-
 // Initial setup
 toggleCartesianAxesVisibility();
 toggleRadialAxesVisibility();
@@ -61,7 +58,7 @@ updateParameters();
 updateFlowerGeometry();
 
 // Create materials
-const material = new THREE.MeshBasicMaterial({
+const basicMaterial = new THREE.MeshBasicMaterial({
   vertexColors: true,
   side: THREE.DoubleSide,
 });
@@ -69,18 +66,41 @@ const pointsMaterial = new THREE.PointsMaterial({
   size: 1,
   vertexColors: true,
 });
+const phongMaterial = new THREE.MeshPhongMaterial({
+  vertexColors: true,
+  side: THREE.DoubleSide,
+});
+const standardMaterial = new THREE.MeshStandardMaterial({
+  vertexColors: true,
+  side: THREE.DoubleSide,
+});
 
 // Create meshes with BufferGeometry and materials
-const mesh = new THREE.Mesh(geometry, material);
+const triangles = new THREE.Mesh(geometry, basicMaterial);
 const points = new THREE.Points(geometry, pointsMaterial);
+const phong = new THREE.Mesh(geometry, phongMaterial);
+const standard = new THREE.Mesh(geometry, standardMaterial);
 points.visible = false;
+phong.visible = false;
+standard.visible = false;
+
+// Create lights
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(1, 1, 1).normalize();
+const ambientLight = new THREE.AmbientLight(0x404040);
+directionalLight.visible = false;
+ambientLight.visible = false;
 
 // Add to the scene
-scene.add(mesh);
+scene.add(triangles);
 scene.add(points);
+scene.add(phong);
+scene.add(standard);
 scene.add(cartesianAxesHelper);
 scene.add(radialAxesHelper.circle);
 scene.add(radialAxesHelper.yAxis);
+scene.add(directionalLight);
+scene.add(ambientLight);
 
 // UI Elements
 const flowerColourPickers = ["flowerColourPicker", "flowerColourPicker2"];
@@ -92,7 +112,7 @@ const buttonActions = {
   toggleAxesButton: toggleCartesianAxesVisibility,
   toggleRadialAxesButton: toggleRadialAxesVisibility,
   toggleUIButton: toggleUI,
-  exportOBJButton: () => exportOBJ(mesh),
+  exportOBJButton: () => exportOBJ(triangles),
   importJSONButton: () => {
     document.getElementById("fileInput").click();
   },
@@ -111,6 +131,9 @@ const buttons = Object.keys(buttonActions);
 
 // Event listeners
 initEventListeners();
+
+// Animation
+animate();
 
 // Functions
 function initEventListeners() {
@@ -176,23 +199,54 @@ function handleFileSelect(event) {
 function switchDisplayMode() {
   const selectedValue = getDropdownValue();
 
-  // Toggle visibility of mesh and points
   if (selectedValue === "triangles") {
-    mesh.visible = true;
+    triangles.visible = true;
     points.visible = false;
     if (currentWireframe != null) {
       currentWireframe.visible = false;
     }
+    phong.visible = false;
+    directionalLight.visible = false;
+    ambientLight.visible = false;
+    standard.visible = false;
   } else if (selectedValue === "points") {
-    mesh.visible = false;
+    triangles.visible = false;
     points.visible = true;
     if (currentWireframe != null) {
       currentWireframe.visible = false;
     }
+    phong.visible = false;
+    directionalLight.visible = false;
+    ambientLight.visible = false;
+    standard.visible = false;
   } else if (selectedValue === "wireframe") {
-    mesh.visible = false;
+    triangles.visible = false;
     points.visible = false;
     updateWireframeGeometry(geometry);
+    phong.visible = false;
+    directionalLight.visible = false;
+    ambientLight.visible = false;
+    standard.visible = false;
+  } else if (selectedValue === "phong") {
+    triangles.visible = false;
+    points.visible = false;
+    if (currentWireframe != null) {
+      currentWireframe.visible = false;
+    }
+    directionalLight.visible = true;
+    ambientLight.visible = true;
+    phong.visible = true;
+    standard.visible = false;
+  } else if (selectedValue === "standard") {
+    triangles.visible = false;
+    points.visible = false;
+    if (currentWireframe != null) {
+      currentWireframe.visible = false;
+    }
+    directionalLight.visible = true;
+    ambientLight.visible = true;
+    phong.visible = false;
+    standard.visible = true;
   }
 }
 
@@ -212,7 +266,6 @@ function onWindowResize() {
 function updateParameters() {
   parameters.numThetaSteps = parseFloat(verticalResolutionSlider.value);
   parameters.numPhiSteps = parseFloat(radialResolutionSlider.value);
-
   parameters.petalNumber = parseFloat(petalNumberSlider.value);
   parameters.petalLength = parseFloat(petalLengthSlider.value);
   parameters.diameter = parseFloat(diameterSlider.value);
@@ -222,8 +275,7 @@ function updateParameters() {
   parameters.curvature2 = parseFloat(curvature2Slider.value);
   parameters.bumpiness = parseFloat(bumpinessSlider.value);
   parameters.bumpNumber = parseFloat(bumpNumberSlider.value);
-
-  updateFlowerGeometry(); // Recreate vertices based on updated parameters
+  updateFlowerGeometry();
 }
 
 function updateFlowerGeometry() {
@@ -235,22 +287,15 @@ function updateFlowerGeometry() {
 }
 
 function updateWireframeGeometry(geometry) {
-  // Remove the existing wireframe if there is one
   if (currentWireframe !== null) {
     scene.remove(currentWireframe);
   }
-
-  // Create a new wireframe
   const wireframeGeometry = new THREE.WireframeGeometry(geometry);
   const wireframe = new THREE.LineSegments(wireframeGeometry);
   wireframe.material.depthTest = false;
   wireframe.material.opacity = 0.25;
   wireframe.material.transparent = true;
-
-  // Add the new wireframe to the scene
   scene.add(wireframe);
-
-  // Update the currentWireframe variable
   currentWireframe = wireframe;
 }
 
@@ -270,9 +315,9 @@ function updateFlowerFromJSON(jsonData) {
 }
 
 function resetCamera() {
-  camera.position.set(0, 0, 550); // Set the initial camera position
-  camera.lookAt(0, 0, 0); // Look at the center of the scene
-  controls.reset(); // Reset controls to their initial state
+  camera.position.set(0, 0, 550);
+  camera.lookAt(0, 0, 0);
+  controls.reset();
 }
 
 function toggleCartesianAxesVisibility() {
@@ -289,14 +334,13 @@ function toggleUI() {
   controlsContainer.classList.toggle("hidden");
 }
 
-// Function to change the background color
 function changeBackgroundColor() {
   const color = backgroundColorPicker.value;
   renderer.setClearColor(new THREE.Color(color), 1);
 }
 
-function loop() {
+function animate() {
   controls.update();
   renderer.render(scene, camera);
-  requestAnimationFrame(loop);
+  requestAnimationFrame(animate);
 }
